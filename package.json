@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed:build": "node scripts/seed/build_seed.mjs",
+    "test:aw": "tsx --test tests/aw/*.test.ts",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "db:reset": "supabase db reset",
@@ -25,6 +26,7 @@
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
+    "tsx": "^4.23.12",
     "typescript": "^5.7.3"
   }
 }

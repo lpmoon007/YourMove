@@ -338,3 +338,22 @@ append-only `events` guard verified).
 3. **STT:** Web Speech API (Chrome/Edge) with typed fallback; Whisper Edge Fn later for cross-browser.
 
 These aren't locked — confirm before Phase 2.
+
+---
+
+## Your Move (second product, same house, separate everything)
+
+**Your Move** is an experiential simulation built on the Adaptive Worlds engine rules —
+entertainment first, not training. It shares this repository and nothing else with The
+Signal: its own engine (`lib/aw`), its own content (`content/yourmove`), its own routes
+(`/yourmove`), its own Supabase project (`supabase-yourmove`), its own environment
+variables, and its own CI job. No Signal schema, seed, route or module is touched by it.
+
+The twelve leadership measurements (the Tier A / Tier B behavioural panel) are available
+there as an **optional overlay** — a checkbox on the facilitator console that reads a
+finished run through the leadership-failure lens. It is off by default, invisible to
+players, and cannot influence a run.
+
+- Play: `/yourmove` · Console: `/yourmove/console?key=$YOURMOVE_CONSOLE_SECRET`
+- Harness: `npm run test:aw`
+- Docs: **`docs/yourmove/README.md`** · Supabase setup: **`docs/yourmove/SUPABASE.md`**
