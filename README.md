@@ -27,6 +27,7 @@ npm run dev         # http://localhost:3000
 | Play | `/` |
 | A run in progress | `/yourmove/<runId>` |
 | Reveal + causal debrief | `/yourmove/<runId>/debrief` |
+| How You Play | `/how-you-play` |
 | Facilitator console | `/yourmove/console?key=$YOURMOVE_CONSOLE_SECRET` |
 
 With no `ANTHROPIC_API_KEY` the world still runs — stage 1 falls back to the deterministic
@@ -67,6 +68,30 @@ app/               the play interface and the facilitator console
 tests/aw/          the simulation harness (item 14)
 supabase/          the schema. Truth is write-once and events append-only, in Postgres
 ```
+
+## How You Play
+
+A behavioral game-profile layer that accumulates across runs and worlds. Eight spectrums —
+Force/Diplomacy, Caution/Boldness, Solo/Coalition, Speed/Deliberation, Control/Delegation,
+Preserve/Risk, Direct/Cunning, Loyalty/Opportunism — each read from evidence tied to
+specific moments, with the counter-evidence shown alongside.
+
+**It measures observable play, never personality.** It says "this is how you tended to play
+in these worlds", never "this is who you are". Neither end of any spectrum is better.
+Nothing is permanent: recent play weighs more, a dimension no world tested reads as
+untested rather than neutral, and two opposite runs read as *context-dependent* rather than
+being averaged into a confident middle.
+
+The architecture is one-way and enforced by a test:
+
+```
+simulation runtime -> event spine -> observer -> profile
+```
+
+Nothing in `lib/aw` outside `lib/aw/play/` may import it, and no play dimension can reach a
+resolution. Scenarios declare what their own verbs mean via `play_signals`, because only
+the world knows that pressing someone is force — but that is authored data the runtime
+never reads.
 
 ## The twelve-measurement overlay
 

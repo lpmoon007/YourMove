@@ -8,6 +8,8 @@ import 'server-only';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 import type { WorldSnapshot } from '../persistence';
+import type { Badge } from '../play/badges';
+import type { PlayEvidence } from '../play/observe';
 import type { RunStore, RunSummary } from './types';
 import { YM_SUPABASE_URL, ymServiceRoleKey } from '@/lib/yourmove/env';
 
@@ -176,6 +178,117 @@ export const supabaseStore: RunStore = {
       .maybeSingle();
     orThrow('reading a lens', res);
     return res.data?.payload ?? null;
+  },
+
+  // --- How You Play. Written after a run ends; never read during one. ---------
+
+  async claimRun(runId, playerId) {
+    orThrow(
+      'registering the player',
+      await db()
+        .from('aw_player')
+        .upsert({ id: playerId, last_seen_at: new Date().toISOString() }, { onConflict: 'id' }),
+    );
+    orThrow('attaching the run to a player', await db().from('aw_run').update({ player_id: playerId }).eq('id', runId));
+  },
+
+  async savePlayEvidence(playerId, evidence) {
+    if (!evidence.length) return;
+    const rows = evidence.map((e) => ({
+      player_id: playerId,
+      run_id: e.run_id,
+      taxonomy: e.taxonomy,
+      dimension: e.dimension,
+      direction: e.direction,
+      strength: e.strength,
+      confidence: e.confidence,
+      opportunity_id: e.opportunity_id,
+      world_id: e.world_id,
+      scenario_id: e.scenario_id,
+      at_world_time: e.at_world_time,
+      context: e.context,
+      quote: e.quote,
+    }));
+    orThrow(
+      'storing play evidence',
+      await db().from('aw_play_evidence').upsert(rows, { onConflict: 'run_id,opportunity_id,dimension' }),
+    );
+  },
+
+  async saveBadges(playerId, badges) {
+    if (!badges.length) return;
+    const rows = badges.map((b) => ({
+      player_id: playerId,
+      badge_id: b.id,
+      run_id: b.run_id,
+      name: b.name,
+      earned_for: b.earned_for,
+      category: b.category,
+      rarity: b.rarity,
+      secret: Boolean(b.secret),
+      world_id: b.world_id,
+    }));
+    // A badge is earned once. A second run that qualifies does not overwrite the first.
+    orThrow(
+      'awarding badges',
+      await db().from('aw_badge_award').upsert(rows, { onConflict: 'player_id,badge_id', ignoreDuplicates: true }),
+    );
+  },
+
+  async playerEvidence(playerId) {
+    const res = await db()
+      .from('aw_play_evidence')
+      .select('*')
+      .eq('player_id', playerId)
+      .order('created_at', { ascending: true });
+    orThrow('reading play evidence', res);
+    return (res.data ?? []).map(
+      (r): PlayEvidence => ({
+        dimension: r.dimension as string,
+        direction: r.direction as number,
+        strength: r.strength as number,
+        confidence: r.confidence as number,
+        opportunity_id: r.opportunity_id as string,
+        run_id: r.run_id as string,
+        world_id: r.world_id as string,
+        scenario_id: r.scenario_id as string,
+        at_world_time: r.at_world_time as number,
+        context: r.context as string,
+        quote: (r.quote as string | null) ?? null,
+        taxonomy: r.taxonomy as string,
+      }),
+    );
+  },
+
+  async playerBadges(playerId) {
+    const res = await db()
+      .from('aw_badge_award')
+      .select('*')
+      .eq('player_id', playerId)
+      .order('earned_at', { ascending: false });
+    orThrow('reading badges', res);
+    return (res.data ?? []).map(
+      (r): Badge => ({
+        id: r.badge_id as string,
+        name: r.name as string,
+        earned_for: r.earned_for as string,
+        category: r.category as Badge['category'],
+        rarity: r.rarity as Badge['rarity'],
+        secret: Boolean(r.secret),
+        world_id: r.world_id as string,
+        run_id: r.run_id as string,
+      }),
+    );
+  },
+
+  async playerRunOrder(playerId) {
+    const res = await db()
+      .from('aw_run')
+      .select('id')
+      .eq('player_id', playerId)
+      .order('created_at', { ascending: true });
+    orThrow('reading the run order', res);
+    return (res.data ?? []).map((r) => r.id as string);
   },
 };
 

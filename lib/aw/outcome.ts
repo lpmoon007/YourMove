@@ -16,6 +16,8 @@ export interface OutcomeAxisResult {
   label: string;
   /** What this axis measures, in the player's words. */
   question: string;
+  /** The ceiling for this axis, so a caller can talk about a strong result. */
+  max: number;
   points: number;
   band: string;
   notes: string[];
@@ -45,7 +47,7 @@ export function scoreOutcome(world: World): RunOutcome {
       [...d.bands].sort((a, b) => b.at_least - a.at_least).find((b) => points >= b.at_least)?.label ??
       d.bands[d.bands.length - 1]?.label ??
       '—';
-    return { key: d.key, label: d.label, question: d.question, points, band, notes };
+    return { key: d.key, label: d.label, question: d.question, max: d.max, points, band, notes };
   });
 
   const best = [...axes].sort((a, b) => b.points - a.points)[0];

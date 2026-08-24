@@ -529,6 +529,10 @@ export const LAST_JOB: ScenarioPackage = {
       speech: true,
       base_difficulty: 0.05,
       chip_when: { always: true },
+      play_signals: [
+        { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
+        { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
+      ],
     },
     {
       id: 'press',
@@ -546,6 +550,10 @@ export const LAST_JOB: ScenarioPackage = {
           { kind: 'disposition', actor: '@target', axis: 'fear', delta: 18 },
         ],
       },
+      play_signals: [
+        { dimension: 'force_diplomacy', direction: -0.7, strength: 0.8, context: 'You applied pressure rather than waiting for them to come around.' },
+        { dimension: 'direct_cunning', direction: -0.5, strength: 0.5, context: 'You made it obvious what you wanted.' },
+      ],
     },
     {
       id: 'search',
@@ -560,6 +568,9 @@ export const LAST_JOB: ScenarioPackage = {
       effects_by_outcome: {
         backfire: [{ kind: 'resource', id: 'heat', from: 'world', to: 'you', amount: 1 }],
       },
+      play_signals: [
+        { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You went and looked yourself rather than asking anyone.' },
+      ],
     },
     {
       id: 'tell',
@@ -573,6 +584,10 @@ export const LAST_JOB: ScenarioPackage = {
       effects_by_outcome: {
         success: [{ kind: 'disposition', actor: '@target', axis: 'trust', delta: 6 }],
       },
+      play_signals: [
+        { dimension: 'direct_cunning', direction: -0.7, strength: 0.6, context: 'You gave something away rather than holding it.' },
+        { dimension: 'solo_coalition', direction: 0.4, strength: 0.45, context: 'You put what you knew into the room.' },
+      ],
     },
     {
       id: 'offer',
@@ -584,6 +599,9 @@ export const LAST_JOB: ScenarioPackage = {
       speech: true,
       base_difficulty: 0.1,
       chip_when: { resource: { id: 'cash', holder: 'you', gte: 1 } },
+      play_signals: [
+        { dimension: 'force_diplomacy', direction: 0.75, strength: 0.8, context: 'You paid for movement instead of demanding it.' },
+      ],
     },
     {
       id: 'send',
@@ -599,6 +617,9 @@ export const LAST_JOB: ScenarioPackage = {
           { kind: 'position', entity: '@target', location: 'hall' },
         ],
       },
+      play_signals: [
+        { dimension: 'control_delegation', direction: 0.8, strength: 0.75, context: 'You gave somebody else the job and let them go and do it.' },
+      ],
     },
     {
       id: 'call',
@@ -613,6 +634,10 @@ export const LAST_JOB: ScenarioPackage = {
         success: [{ kind: 'resource', id: 'heat', from: 'world', to: 'you', amount: 1 }],
         backfire: [{ kind: 'resource', id: 'heat', from: 'world', to: 'you', amount: 2 }],
       },
+      play_signals: [
+        { dimension: 'solo_coalition', direction: -0.35, strength: 0.4, context: 'You reached outside the room rather than working it from inside.' },
+        { dimension: 'caution_boldness', direction: 0.4, strength: 0.45, context: 'You made a call from a building you were trying to leave quietly.' },
+      ],
     },
     {
       id: 'wait',
@@ -622,6 +647,10 @@ export const LAST_JOB: ScenarioPackage = {
       default_minutes: 3,
       base_difficulty: 0,
       chip_when: { always: true },
+      play_signals: [
+        { dimension: 'speed_deliberation', direction: 0.6, strength: 0.55, context: 'You let the room move first.' },
+        { dimension: 'caution_boldness', direction: -0.4, strength: 0.45, context: 'You spent a minute rather than a decision.' },
+      ],
     },
     {
       id: 'accuse',
@@ -635,6 +664,11 @@ export const LAST_JOB: ScenarioPackage = {
       commitment: true,
       base_difficulty: 0.3,
       chip_when: { turns: { gte: 2 } },
+      play_signals: [
+        { dimension: 'force_diplomacy', direction: -0.5, strength: 0.6, context: 'You named somebody in front of everyone.' },
+        { dimension: 'direct_cunning', direction: -0.8, strength: 0.7, context: 'You said the thing out loud instead of acting on it quietly.' },
+        { dimension: 'loyalty_opportunism', direction: 0.5, strength: 0.6, context: 'You turned on somebody from your own crew.' },
+      ],
     },
     {
       id: 'leave',
@@ -646,6 +680,11 @@ export const LAST_JOB: ScenarioPackage = {
       commitment: true,
       base_difficulty: 0.1,
       chip_when: { clock: { gte: 8 } },
+      play_signals: [
+        { dimension: 'preserve_risk', direction: -0.6, strength: 0.7, context: 'You took what you had rather than reaching for more.' },
+        { dimension: 'solo_coalition', direction: -0.5, strength: 0.6, context: 'You settled it by yourself, on your way out the door.' },
+        { dimension: 'loyalty_opportunism', direction: 0.3, strength: 0.4, context: 'You left the question standing and the crew with it.' },
+      ],
     },
   ],
 
@@ -669,6 +708,9 @@ export const LAST_JOB: ScenarioPackage = {
         { kind: 'disposition', actor: '@target', axis: 'trust', delta: -20 },
         { kind: 'disposition', actor: '@target', axis: 'fear', delta: 8 },
       ],
+      play_signals: [
+        { dimension: 'force_diplomacy', direction: -0.6, strength: 0.7, context: 'You used what you knew as leverage the moment you had it.' },
+      ],
       summary_else:
         "You put the time to them and nothing moves in their face, because there is nothing behind it to move. What you spend here is their goodwill.",
     },
@@ -681,6 +723,10 @@ export const LAST_JOB: ScenarioPackage = {
         { kind: 'resource', id: 'cash', from: 'you', to: 'marla', amount: 8000 },
         { kind: 'flag', id: 'marla_paid', value: true },
         { kind: 'disposition', actor: 'marla', axis: 'trust', delta: 25 },
+      ],
+      play_signals: [
+        { dimension: 'force_diplomacy', direction: 0.7, strength: 0.8, context: 'You bought what you needed rather than taking it.' },
+        { dimension: 'preserve_risk', direction: 0.5, strength: 0.6, context: 'You spent from the take to get an answer.' },
       ],
       summary:
         'Marla counts it without looking down, which means she has done this before. "Ask me the question again," she says. "Properly this time."',
@@ -939,6 +985,33 @@ export const LAST_JOB: ScenarioPackage = {
         { at_least: 0, label: 'you left without knowing' },
         { at_least: -2, label: 'you got it wrong out loud' },
       ],
+    },
+  ],
+
+  // One room and nineteen minutes cannot test everything. A dimension this world never
+  // puts in front of you is reported as untested rather than guessed at.
+  play_dimensions: [
+    'force_diplomacy',
+    'caution_boldness',
+    'solo_coalition',
+    'speed_deliberation',
+    'control_delegation',
+    'preserve_risk',
+    'direct_cunning',
+    'loyalty_opportunism',
+  ],
+  world_specific_dimensions: [
+    {
+      id: 'trust_crew_compartmentalize',
+      label_left: 'Trust the Crew',
+      label_right: 'Compartmentalize',
+      measures: 'Whether you worked the room together or kept each of them in the dark about the others.',
+    },
+    {
+      id: 'abort_push_through',
+      label_left: 'Abort',
+      label_right: 'Push Through',
+      measures: 'Whether a scare made you cut and run or made you finish what you started.',
     },
   ],
 

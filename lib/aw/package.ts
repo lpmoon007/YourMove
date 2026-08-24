@@ -13,6 +13,7 @@ import type {
   Effect,
   KnowledgeStatus,
   OutcomeClass,
+  PlaySignal,
   RunVersions,
 } from './types';
 
@@ -146,6 +147,9 @@ export interface VerbDef {
   effects_by_outcome?: Partial<Record<OutcomeClass, EffectTemplate[]>>;
   /** How hard this verb is on its own, before the world pushes back. 0..1. */
   base_difficulty?: number;
+  /** What choosing this verb says about how someone is PLAYING. Read only after the run,
+   *  by lib/aw/play — never by the runtime, and never able to change an outcome. */
+  play_signals?: PlaySignal[];
 }
 
 export interface ResolutionOverride {
@@ -162,6 +166,8 @@ export interface ResolutionOverride {
   summary: string;
   summary_else?: string;
   reveals?: { fact: string; to: string; status: KnowledgeStatus; via: string }[];
+  /** What reaching this beat says about how someone is playing (read after the fact). */
+  play_signals?: PlaySignal[];
 }
 
 export interface InjectDef {
@@ -276,6 +282,18 @@ export interface ScenarioPackage {
   difficulty: Record<string, { opposition_multiplier: number; cost_multiplier: number }>;
   content_descriptors: ContentDescriptors;
   assets: { audio: { id: string; text: string; voice: string }[] };
+  /** Which of the Core Eight this world can meaningfully observe. Empty means all of
+   *  them: a world that never offers a delegation opportunity simply produces no
+   *  delegation evidence, and the profile reports that honestly. */
+  play_dimensions?: string[];
+  /** Extra spectrums that only make sense here. They use the same evidence machinery and
+   *  are never folded into the cross-world profile. */
+  world_specific_dimensions?: {
+    id: string;
+    label_left: string;
+    label_right: string;
+    measures: string;
+  }[];
   /** Item 6: invariants are extensible PER SCENARIO without engine changes. A custom
    *  invariant is a predicate that must never hold after a write. */
   invariants?: {

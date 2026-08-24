@@ -129,6 +129,35 @@ export default async function DebriefPage({ params }: { params: Promise<{ runId:
         ) : null}
       </ul>
 
+      <h2>How you played this one</h2>
+      <p className="ym-section-note">{d.run_card.sentence}</p>
+      <div className="ym-runcard">
+        {d.run_card.reads.slice(0, 6).map((r) => (
+          <div className="ym-runcard-row" key={r.dimension}>
+            <span className="ym-runcard-label">{r.position! < 0 ? r.left : r.right}</span>
+            <span className="ym-runcard-bar">
+              <span style={{ width: `${Math.round(Math.abs(r.position!) * 100)}%` }} />
+            </span>
+          </div>
+        ))}
+        {!d.run_card.reads.length ? <p className="ym-missed">Too few moves to read anything from.</p> : null}
+      </div>
+
+      {d.badges.length ? (
+        <>
+          <h2>The world noticed</h2>
+          <ul className="ym-badges">
+            {d.badges.map((b) => (
+              <li key={b.id} className={`ym-badge ym-rarity-${b.rarity}`}>
+                <strong>{b.name}</strong>
+                <span className="ym-badge-rarity">{b.rarity}</span>
+                <span className="ym-badge-for">{b.earned_for}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
       <h2>The run in numbers</h2>
       <ul className="ym-truth">
         <li>
@@ -146,6 +175,9 @@ export default async function DebriefPage({ params }: { params: Promise<{ runId:
       </ul>
 
       <p style={{ marginTop: 28 }}>
+        <a className="ym-button" href="/how-you-play">
+          How you play →
+        </a>{' '}
         <a className="ym-button" href="/">
           Play it again →
         </a>

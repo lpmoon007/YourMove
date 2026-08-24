@@ -63,7 +63,34 @@ language anywhere a player can see. The twelve-measurement leadership overlay
 (`lib/aw/lens/lfs12.ts`) is a facilitator-side reading of a finished run, off by default,
 never mentioned to players.
 
-## 6. Engine laws that are never negotiable
+## 6. How You Play — measure play, never personality
+
+`lib/aw/play/` accumulates evidence about how someone PLAYS, across runs and worlds.
+
+**The rule: measure observable play behavior, never personality.** The system says "this
+is how you tended to play in these worlds." It never says "this is who you are."
+
+- Write "you tend to", "so far you've often", "in the worlds you've played". Never "you
+  are …", and never the words personality, trait, psychological, diagnosis, assessment,
+  leadership style, behavioral type. A test fails the build on any of them.
+- Neither end of a spectrum is better than the other. Force is not worse than Diplomacy.
+- Nothing is permanent. Recent play weighs more, and thin evidence says so.
+- A dimension no world tested reports as untested, never as a neutral middle.
+- Opposite runs read as context-dependent. Never average two contradictory nights into a
+  confident middle — the contradiction is the interesting part, so surface it.
+- Every read cites the events behind it, and counter-evidence is shown, not hidden.
+
+**The architectural rule, enforced by a test:** the simulation emits events; the pattern
+engine reads them afterward.
+
+    simulation runtime -> event spine -> observer -> profile
+
+No module in `lib/aw` outside `play/` may import it. A play dimension can never reach a
+resolution. The scenario declares what its own verbs mean (`play_signals`), because only
+the world knows that pressing someone is force — but it declares it as data the runtime
+never reads.
+
+## 7. Engine laws that are never negotiable
 
 Full detail in `docs/ENGINE.md`. The short version:
 
@@ -76,7 +103,7 @@ Full detail in `docs/ENGINE.md`. The short version:
 - Blocks are diegetic: the world says why, in world. Never "you can't do that."
 - The event spine is append-only, with causality written at creation.
 
-## 7. Build and verify
+## 8. Build and verify
 
 ```bash
 npm run test:aw     # the harness — no key, no database needed
@@ -86,10 +113,11 @@ npm run build       # type-check + compile
 Both must pass before pushing. For player-facing changes, also run the app and look at
 the screen.
 
-## 8. Repository shape
+## 9. Repository shape
 
 ```
 lib/aw/            engine — pure TypeScript, no I/O, no scenario knowledge
+lib/aw/play/       How You Play — reads finished runs, never read BY the engine
 content/yourmove/  worlds, as data. No logic: conditions are a declarative language
 app/, components/  the play interface and the facilitator console
 tests/aw/          the simulation harness

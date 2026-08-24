@@ -5,6 +5,8 @@
 import type { AdjudicationRecord } from '../engine';
 import type { RunOutcome } from '../outcome';
 import type { WorldSnapshot } from '../persistence';
+import type { Badge } from '../play/badges';
+import type { PlayEvidence } from '../play/observe';
 
 export interface RunSummary {
   run_id: string;
@@ -34,4 +36,15 @@ export interface RunStore {
    *  they are an interpretation of the run, not part of it. */
   saveLens(runId: string, lensKey: string, lensVersion: string, payload: unknown): Promise<void>;
   getLens(runId: string, lensKey: string): Promise<unknown | null>;
+
+  // --- How You Play. Written once, after a run ends; never read by the simulation. ---
+  /** Attach a run to the local identifier that played it. */
+  claimRun(runId: string, playerId: string): Promise<void>;
+  savePlayEvidence(playerId: string, evidence: PlayEvidence[]): Promise<void>;
+  saveBadges(playerId: string, badges: Badge[]): Promise<void>;
+  /** All evidence for one player, oldest run first. */
+  playerEvidence(playerId: string): Promise<PlayEvidence[]>;
+  playerBadges(playerId: string): Promise<Badge[]>;
+  /** Run ids for this player, oldest first — the recency ordering the profile needs. */
+  playerRunOrder(playerId: string): Promise<string[]>;
 }

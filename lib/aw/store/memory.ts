@@ -6,6 +6,8 @@
 
 import type { RunOutcome } from '../outcome';
 import type { WorldSnapshot } from '../persistence';
+import type { Badge } from '../play/badges';
+import type { PlayEvidence } from '../play/observe';
 import type { RunStore, RunSummary, TurnRecord } from './types';
 
 interface Row {
@@ -18,6 +20,12 @@ interface Row {
 }
 
 const RUNS = new Map<string, Row>();
+const PLAYERS = new Map<string, { runs: string[]; evidence: PlayEvidence[]; badges: Map<string, Badge> }>();
+const player = (id: string) => {
+  let p = PLAYERS.get(id);
+  if (!p) { p = { runs: [], evidence: [], badges: new Map() }; PLAYERS.set(id, p); }
+  return p;
+};
 
 export const memoryStore: RunStore = {
   kind: 'memory',
@@ -71,5 +79,36 @@ export const memoryStore: RunStore = {
 
   async getLens(runId, lensKey) {
     return RUNS.get(runId)?.lenses[lensKey]?.payload ?? null;
+  },
+
+  async claimRun(runId, playerId) {
+    const p = player(playerId);
+    if (!p.runs.includes(runId)) p.runs.push(runId);
+  },
+
+  async savePlayEvidence(playerId, evidence) {
+    const p = player(playerId);
+    const seen = new Set(p.evidence.map((e) => `${e.run_id}|${e.opportunity_id}|${e.dimension}`));
+    for (const e of evidence) {
+      const k = `${e.run_id}|${e.opportunity_id}|${e.dimension}`;
+      if (!seen.has(k)) { p.evidence.push(e); seen.add(k); }
+    }
+  },
+
+  async saveBadges(playerId, badges) {
+    const p = player(playerId);
+    for (const b of badges) if (!p.badges.has(b.id)) p.badges.set(b.id, b);
+  },
+
+  async playerEvidence(playerId) {
+    return [...player(playerId).evidence];
+  },
+
+  async playerBadges(playerId) {
+    return [...player(playerId).badges.values()];
+  },
+
+  async playerRunOrder(playerId) {
+    return [...player(playerId).runs];
   },
 };

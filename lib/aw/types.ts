@@ -276,6 +276,19 @@ export interface CharacterDef {
   fallback_lines: Record<string, string>;
 }
 
+/**
+ * What an authored verb or beat says about how somebody is PLAYING. Declared in a
+ * scenario, read only after a run by lib/aw/play. It lives here rather than in that
+ * directory so no engine module has to import the play layer at all — not even a type.
+ */
+export interface PlaySignal {
+  dimension: string;
+  /** −1 = the left label of the dimension, +1 = the right. */
+  direction: number;
+  strength: number;
+  context?: string;
+}
+
 // ---------------------------------------------------------------------------
 // Run versioning (item 2) — a seed alone is not a reproducible world
 // ---------------------------------------------------------------------------
