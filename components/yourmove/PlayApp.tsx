@@ -47,7 +47,9 @@ export function PlayApp({ initial }: { initial: RunView }) {
         <header className="ym-head">
           <div>
             <h1 className="ym-title">{run.title}</h1>
-            <p className="ym-tagline">{run.tagline}</p>
+            <p className="ym-tagline">
+              You are <strong>{ui.you.role}</strong>. {ui.you.objective}
+            </p>
           </div>
           <div className={`ym-clock${urgent ? ' ym-clock-urgent' : ''}`}>
             <span className="ym-clock-num">{remaining ?? '—'}</span>
@@ -114,6 +116,11 @@ export function PlayApp({ initial }: { initial: RunView }) {
           </main>
 
           <aside className="ym-side">
+            <section>
+              <h2>You</h2>
+              <p className="ym-you">{ui.you.description}</p>
+            </section>
+
             <section>
               <h2>In the room</h2>
               <ul className="ym-cast">

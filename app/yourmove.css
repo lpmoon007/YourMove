@@ -103,6 +103,29 @@ body { -webkit-font-smoothing: antialiased; }
 }
 .ym-note { color: var(--ym-dim); font-size: 12px; border-top: 1px solid var(--ym-line); padding-top: 10px; }
 
+/* --- the brief on the entry screen --- */
+.ym-brief { border: 1px solid var(--ym-line); background: var(--ym-panel); padding: 4px 16px 12px; margin-bottom: 16px; }
+.ym-brief-row { padding: 12px 0; border-bottom: 1px solid var(--ym-line); }
+.ym-brief-row:last-child { border-bottom: none; }
+.ym-brief-row h2 {
+  margin: 0 0 4px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ym-dim); font-weight: 600;
+}
+.ym-brief-row p { margin: 0; font-size: 15px; }
+.ym-brief-row strong { color: var(--ym-hot); }
+.ym-brief-goal p { color: var(--ym-ink); }
+.ym-how { margin: 0; padding-left: 18px; font-size: 14px; }
+.ym-how li { margin-bottom: 7px; color: var(--ym-dim); }
+.ym-how strong { color: var(--ym-ink); }
+.ym-contract summary {
+  cursor: pointer; font-size: 12px; letter-spacing: 0.06em; color: var(--ym-dim);
+  list-style: none; padding: 2px 0;
+}
+.ym-contract summary::before { content: '▸ '; }
+.ym-contract[open] summary::before { content: '▾ '; }
+.ym-contract summary:hover { color: var(--ym-ink); }
+.ym-you { margin: 0; font-size: 13px; color: var(--ym-dim); }
+
 /* --- entry / contract screen --- */
 .ym-gate { max-width: 640px; margin: 0 auto; padding: 48px 20px; }
 .ym-wordmark {
@@ -112,7 +135,7 @@ body { -webkit-font-smoothing: antialiased; }
 .ym-gate h1 { font-size: 34px; margin: 0 0 6px; }
 .ym-gate .ym-tagline { font-size: 16px; margin-bottom: 24px; }
 .ym-contract { border: 1px solid var(--ym-line); background: var(--ym-panel); padding: 16px; margin-bottom: 20px; }
-.ym-contract h2 { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ym-dim); margin: 0 0 8px; }
+.ym-contract h2 { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ym-dim); margin: 14px 0 8px; }
 .ym-contract ul { margin: 0 0 14px; padding-left: 18px; font-size: 14px; color: var(--ym-dim); }
 .ym-contract li { margin-bottom: 3px; }
 .ym-meta { font-size: 12px; color: var(--ym-dim); }

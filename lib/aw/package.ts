@@ -218,7 +218,20 @@ export interface ScenarioPackage {
   world: {
     premise: string;
     cold_open: string;
-    player: { id: string; name: string; role: string; start_location: string };
+    player: {
+      id: string;
+      name: string;
+      role: string;
+      start_location: string;
+      /** Who you are, in the second person. Two sentences at most — orientation, not
+       *  exposition. The rules require a DEFINED ROLE at the cold open. */
+      you: string;
+      /** What you are trying to achieve. Stated plainly, because a player who does not
+       *  know the objective cannot make an interesting choice about it. */
+      objective: string;
+      /** The one thing pressing on you right now. */
+      pressure: string;
+    };
     /** Hard stop in world minutes. Null means no clock limit. */
     duration_minutes: number | null;
     /** Resource id → { label, holder → amount }. */
@@ -282,6 +295,11 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   const knownActor = (id: string) => actorIds.has(id) || bindingTokens.has(id) || id === '@player' || id === 'world';
 
   if (!locIds.has(p.world.player.start_location)) err('bad_start', 'player start_location is not a location');
+  // The cold open must land the player with a defined role and a legible objective.
+  // A world that drops someone in without them is not mysterious, it is unplayable.
+  if (!p.world.player.you?.trim()) err('no_player_identity', 'world.player.you is required — the player must know who they are');
+  if (!p.world.player.objective?.trim()) err('no_objective', 'world.player.objective is required — the player must know what they want');
+  if (!p.world.player.pressure?.trim()) err('no_pressure', 'world.player.pressure is required — the cold open needs one immediate pressure');
   for (const l of p.locations)
     for (const dest of Object.keys(l.travel_minutes))
       if (!locIds.has(dest)) err('bad_travel', `${l.id} → unknown location ${dest}`);

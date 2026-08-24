@@ -34,7 +34,22 @@ export const LAST_JOB: ScenarioPackage = {
       "you know something is wrong. Dez is at the window with two fingers in the blind. Marla is standing " +
       "exactly where she was when you came in. Cyrus is holding his phone like it bit him.\n\n" +
       "Dez says it without turning around. \"There's a car on the corner that's been there since we got back.\"",
-    player: { id: 'you', name: 'You', role: 'the one who planned it', start_location: 'room' },
+    player: {
+      id: 'you',
+      name: 'You',
+      role: 'the planner',
+      start_location: 'room',
+      you:
+        'You put this crew together. You picked the hotel, you picked the hour, and you told ' +
+        'everyone what the plan was. Forty minutes ago it worked perfectly. Whatever happens in ' +
+        'the next nineteen minutes is also yours.',
+      objective:
+        'Get out of this room with the money and with a crew that still works — and if one of ' +
+        'them called the police, know which one before you decide who rides in the van.',
+      pressure:
+        'Dez says there has been a car on the corner since you got back, and he is close to ' +
+        'not waiting for you.',
+    },
     duration_minutes: 19,
     resources: {
       cash: { label: 'The duffel', holdings: { you: 40000 } },
@@ -338,6 +353,18 @@ export const LAST_JOB: ScenarioPackage = {
       via_verb: ['search'],
       via_target: ['window'],
       disclosure: { status: 'observed', value: '@canonical', source: 'observation', confidence: 0.95 },
+    },
+    {
+      id: 'p_sedan_dez',
+      fact: 'sedan_truth',
+      description: 'Ask Dez about the car. He will tell you exactly what he believes, and he believes it hard.',
+      via_verb: ['ask', 'press'],
+      via_target: ['dez'],
+      requires: { knows: { actor: 'dez', fact: 'sedan_truth' } },
+      topic_hints: ['car', 'sedan', 'corner', 'street', 'outside', 'grey', 'gray', 'saw', 'window', 'police', 'cop'],
+      // '@holder_belief' means he passes on what he holds — which is wrong. That is the
+      // sincere mistake working as designed, and it is why the reversal lands later.
+      disclosure: { status: 'told', value: '@holder_belief', confidence: 0.75, fidelity: 0.9 },
     },
     {
       id: 'p_sedan_marla',

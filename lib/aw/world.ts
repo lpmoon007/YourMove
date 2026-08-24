@@ -250,7 +250,9 @@ export class World {
     const st = this.store.read();
     const loc = this.pkg.locations.find((l) => l.id === this.playerLocation) ?? null;
     const pctx = this.predContext();
+    const you = this.pkg.world.player;
     return Object.freeze({
+      you: { name: you.name, role: you.role, description: you.you, objective: you.objective },
       clock: st.clock,
       minutes_remaining: this.minutesRemaining,
       location: loc ? { id: loc.id, name: loc.name, description: loc.description } : null,

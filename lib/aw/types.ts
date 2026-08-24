@@ -187,6 +187,9 @@ export interface Resolution {
 // ---------------------------------------------------------------------------
 
 export interface UiProjection {
+  /** Who the player is and what they are trying to do. Constant for the run, rendered
+   *  everywhere, because "what am I even doing here" is not the interesting question. */
+  you: { name: string; role: string; description: string; objective: string };
   clock: number;
   minutes_remaining: number | null;
   location: { id: string; name: string; description: string } | null;
