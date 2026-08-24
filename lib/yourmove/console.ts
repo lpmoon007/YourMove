@@ -15,7 +15,7 @@ import { applyLfs12, LFS12_LENS_VERSION, type Lfs12Read } from '@/lib/aw/lens/lf
 import { runStore, type RunSummary } from '@/lib/aw/store';
 import { ymConsoleSecretOrNull } from '@/lib/yourmove/env';
 
-export function consoleAuthorised(key: string | undefined): boolean {
+export function consoleAuthorized(key: string | undefined): boolean {
   const secret = ymConsoleSecretOrNull();
   // No secret configured means the console is CLOSED, not open. A missing lock is not
   // an invitation.

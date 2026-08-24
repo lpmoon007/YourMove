@@ -18,7 +18,7 @@ import type {
 
 /** Bumped when the SHAPE of a package changes. Packages declare which they were written for. */
 export const SCHEMA_VERSION = 'aw-schema-1';
-/** Bumped when engine behaviour changes in a way that alters resolution. Stamped on runs. */
+/** Bumped when engine behavior changes in a way that alters resolution. Stamped on runs. */
 export const ENGINE_RULESET_VERSION = 'aw-engine-1.0.0';
 
 // ---------------------------------------------------------------------------
@@ -52,7 +52,7 @@ export interface FactDef {
   id: string;
   /** Player-facing phrasing. "{value}" is substituted with the known value. */
   statement: string;
-  category: 'core' | 'supporting' | 'colour';
+  category: 'core' | 'supporting' | 'color';
   sensitivity: 'hidden' | 'discoverable' | 'public';
   /** Path ids. Part 4: anything a top outcome needs has at least two. */
   discoverable_via: string[];

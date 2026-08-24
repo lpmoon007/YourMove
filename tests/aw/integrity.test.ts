@@ -62,7 +62,7 @@ test('no projection can carry canonical truth off the engine', () => {
       assert.equal(s.includes(factId), false, `${name} projection named the hidden fact ${factId}`);
     }
   }
-  // And the truth object itself is never serialised into any of them.
+  // And the truth object itself is never serialized into any of them.
   const truthJson = JSON.stringify(w.truth.entries());
   for (const [name, s] of surfaces) assert.equal(s.includes(truthJson), false, `${name} carried the truth object`);
 });

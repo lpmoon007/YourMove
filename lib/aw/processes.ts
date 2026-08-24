@@ -3,7 +3,7 @@
 //
 // Actor-driven: a character relocates, leaks, panics, destroys evidence, changes
 // allegiance, acts on a false belief. System-driven: evidence degrades, pressure builds,
-// deadlines approach, rumours spread.
+// deadlines approach, rumors spread.
 //
 // Every process has explicit trigger conditions, writes events with causal links like
 // any other actor, routes through invariants, and is AUTHORED IN THE PACKAGE, never

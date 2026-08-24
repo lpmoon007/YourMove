@@ -73,7 +73,7 @@ export const PLAUSIBLE_ACTIONS: string[] = [
   'offer Marla twenty thousand',
   'give Dez ten grand and tell him to drive',
   'pay Cyrus to make the call',
-  // social manoeuvres
+  // social maneuvers
   'tell Dez the car is nothing',
   'warn Marla that Cyrus is talking about her',
   'quietly ask Cyrus about Marla',
@@ -84,7 +84,7 @@ export const PLAUSIBLE_ACTIONS: string[] = [
   'check everyone for a second phone',
   'unplug the house phone',
   'split the money four ways and put a share in front of each of them',
-  'ask Marla to call the front desk and check who dialled out',
+  'ask Marla to call the front desk and check who dialed out',
   'tell them nobody leaves until the van is in the alley',
   'take the batteries out of the tablet',
   'put the duffel in the corridor and shut the door',

@@ -124,3 +124,17 @@ test('authored rules constrain resolution, they do not enumerate it (L5)', () =>
   console.log(`    overrides ${load.overrides} · verbs ${load.verbs} · ratio ${load.ratio.toFixed(2)}`);
   assert.ok(load.ratio < 1, 'more overrides than verbs is branching fiction with extra steps');
 });
+
+test('a topic hint matches whole words, not substrings', async () => {
+  // "about" contains "out", which used to open the who-left-the-room path on a question
+  // about a parked car. A question gets the answer to the question it asked.
+  // The slice fixture, whose draws are a permanent regression baseline (item 13).
+  const w = fixture();
+  await takeTurn(w, 'ask Dez about the parked car');
+  assert.equal(w.knowledge.hasHeard('you', 'sedan_truth'), true, 'the car question got no answer about the car');
+  assert.equal(
+    w.knowledge.hasHeard('you', 'who_was_out'),
+    false,
+    'a question about a car leaked the answer to a question about the room',
+  );
+});

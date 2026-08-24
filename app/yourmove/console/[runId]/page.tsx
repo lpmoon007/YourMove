@@ -1,4 +1,4 @@
-import { consoleAuthorised, runDetail } from '@/lib/yourmove/console';
+import { consoleAuthorized, runDetail } from '@/lib/yourmove/console';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,11 +13,11 @@ export default async function ConsoleRunPage({
 }) {
   const { runId } = await params;
   const { key, lfs12 } = await searchParams;
-  if (!consoleAuthorised(key)) {
+  if (!consoleAuthorized(key)) {
     return (
       <div className="ym-gate">
         <h1>Console</h1>
-        <p className="ym-tagline">Not authorised.</p>
+        <p className="ym-tagline">Not authorized.</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default async function ConsoleRunPage({
             <strong>Read this run through the leadership-failure lens</strong> (the twelve measurements)
           </label>
           <p>
-            Applies the Tier A / Tier B behavioural panel to what this player actually did. It is an interpretation
+            Applies the Tier A / Tier B behavioral panel to what this player actually did. It is an interpretation
             taken after the fact: it did not touch the run, the player never saw it, and a marker the world never
             gave them a chance to exercise is reported as not exercised rather than as a zero.
           </p>

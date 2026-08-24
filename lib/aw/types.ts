@@ -198,7 +198,7 @@ export interface UiProjection {
   flags_visible: Record<string, string | number | boolean>;
   documents: { id: string; title: string; body: string }[];
   known_facts: { id: string; statement: string; status: KnowledgeStatus; confidence: number }[];
-  /** Actions the world will recognise right now. Scaffolding only — typing beats chips (item 21). */
+  /** Actions the world will recognize right now. Scaffolding only — typing beats chips (item 21). */
   verb_chips: { id: string; label: string }[];
 }
 

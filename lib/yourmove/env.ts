@@ -15,7 +15,7 @@ export function ymServiceRoleKey(): string {
 }
 
 /** True when a Your Move Supabase project is configured. Until then the app runs on the
- *  in-memory store, which is the correct behaviour for local play and for CI. */
+ *  in-memory store, which is the correct behavior for local play and for CI. */
 export function ymSupabaseConfigured(): boolean {
   return Boolean(YM_SUPABASE_URL && process.env.YOURMOVE_SUPABASE_SERVICE_ROLE);
 }

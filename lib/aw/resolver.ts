@@ -118,14 +118,21 @@ function discoveries(world: World, intent: Intent, outcome: OutcomeClass): Resol
   const ctx = world.predContext();
   const out: Resolution['reveals'] = [];
   const target = intent.targets[0] ?? null;
-  const said = `${intent.raw} ${intent.goal ?? ''}`.toLowerCase();
+  // Whole words only. Substring matching made "about" contain "out", which opened the
+  // who-left-the-room path on a question about a parked car.
+  const said = new Set(
+    `${intent.raw} ${intent.goal ?? ''}`
+      .toLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter(Boolean),
+  );
 
   for (const p of world.pkg.discovery_paths) {
     if (p.via_verb && !p.via_verb.includes(intent.verb)) continue;
     if (p.via_target && !(target && p.via_target.includes(target))) continue;
     if (!p.via_verb && !p.via_target) continue; // override-only path
     // A targeted question gets the answer; a vague one does not.
-    if (p.topic_hints?.length && !p.topic_hints.some((h) => said.includes(h.toLowerCase()))) continue;
+    if (p.topic_hints?.length && !p.topic_hints.some((h) => said.has(h.toLowerCase()))) continue;
     if (!evalPred(p.requires, ctx)) continue;
 
     const d = p.disclosure ?? { status: 'told' as KnowledgeStatus, value: '@holder_belief' };

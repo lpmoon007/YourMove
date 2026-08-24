@@ -1,4 +1,4 @@
-import { consoleAuthorised, listRuns } from '@/lib/yourmove/console';
+import { consoleAuthorized, listRuns } from '@/lib/yourmove/console';
 
 export const dynamic = 'force-dynamic';
 
@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 // player's app, and nothing here can change a run.
 export default async function ConsolePage({ searchParams }: { searchParams: Promise<{ key?: string }> }) {
   const { key } = await searchParams;
-  if (!consoleAuthorised(key)) {
+  if (!consoleAuthorized(key)) {
     return (
       <div className="ym-gate">
         <h1>Console</h1>

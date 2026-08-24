@@ -128,7 +128,7 @@ thousand dollars, and a call that went out at 11:04 from somewhere in this build
 - The culprit is drawn from the seed, and **"nobody"** is one of the four answers — so a
   confident accusation is a real risk and no run can be solved from the outside.
 
-Authoring rules honoured: two independent discovery paths for every fact a top outcome
+Authoring rules honored: two independent discovery paths for every fact a top outcome
 needs, leverage on every character, one sincere mistake and one deliberate deception you
 cannot separate by manner, a recovery path at reduced ceiling, four outcome axes that move
 independently, and content descriptors written before the scenario.
@@ -138,4 +138,4 @@ independently, and content descriptors written before the scenario.
 Per Part 5 of the design rules: no cross-run persistence beyond save and resume, no
 accounts, no second seat, no cross-scenario anything, no difficulty tiers, no per-run seed
 variation (the infrastructure is live; the variation is V1C), no presentation layer, no
-voice, no model-routing optimisation before cost is measured, and no authoring tool.
+voice, no model-routing optimization before cost is measured, and no authoring tool.

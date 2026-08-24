@@ -6,7 +6,7 @@
 // condition below is a predicate in the declarative language, and every consequence is an
 // effect the invariant engine will validate before it touches the world.
 //
-// Authoring rules honoured here (Part 4):
+// Authoring rules honored here (Part 4):
 //   - leak_source, call_time and who_was_out each have two independent discovery paths
 //   - every character holds leverage: something you need, something to protect, or both
 //   - Dez is sincerely mistaken, Marla is deliberately deceptive, and you cannot tell
@@ -31,7 +31,7 @@ export const LAST_JOB: ScenarioPackage = {
       'A hotel room being used as a safehouse, forty minutes after a robbery and nineteen minutes before ' +
       'the getaway van leaves without whoever is still arguing.',
     setup:
-      'Forty minutes ago you and three other people robbed the night safe of a jewellery wholesaler four ' +
+      'Forty minutes ago you and three other people robbed the night safe of a jewelry wholesaler four ' +
       'blocks from here. It went exactly to plan: nobody was hurt, nobody was caught, no alarm went off. ' +
       'You are all now in Room 1114 of the Meridian Hotel, which Marla — the night manager, and one of the ' +
       'four of you — arranged as the place to sit for an hour before splitting up. Forty thousand dollars ' +
@@ -48,13 +48,13 @@ export const LAST_JOB: ScenarioPackage = {
     player: {
       id: 'you',
       name: 'You',
-      role: 'the planner',
+      role: 'the mastermind',
       start_location: 'room',
       you:
-        'A career criminal, and the one who planned this robbery. You chose the crew, the target, the ' +
-        'hotel and the hour, and forty minutes ago every part of that was right. You are not the muscle ' +
-        'and you are not the money — you are the person the other three look at when something stops ' +
-        'making sense, which is happening now.',
+        'A career criminal, and the one whose idea this was. You found the target, picked the crew, ' +
+        'chose the hotel and set the hour, and forty minutes ago every one of those calls was right. ' +
+        'You are not the muscle and you are not the money. You are the one the other three look at when ' +
+        'something stops making sense — which is happening now.',
       objective:
         'Leave this room in the next nineteen minutes with the forty thousand, without the police, and ' +
         'without having ruined three people you may need again. If one of them did make that call, find ' +
@@ -84,7 +84,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'hall',
       name: 'the eleventh-floor corridor',
-      description: 'Carpet the colour of a bruise, an ice machine, and a service lift that needs a key.',
+      description: 'Carpet the color of a bruise, an ice machine, and a service lift that needs a key.',
       travel_minutes: { room: 1 },
     },
   ],
@@ -124,7 +124,7 @@ export const LAST_JOB: ScenarioPackage = {
       id: 'window',
       name: 'the window',
       kind: 'fixture',
-      description: 'Eleven floors down, the corner of Ninth and Marsh. A grey sedan is parked badly outside the laundromat.',
+      description: 'Eleven floors down, the corner of Ninth and Marsh. A gray sedan is parked badly outside the laundromat.',
       initial_state: 'blinds_open',
       location: 'room',
       searchable: true,
@@ -159,7 +159,7 @@ export const LAST_JOB: ScenarioPackage = {
       name: 'Dez',
       role: 'the driver',
       voice:
-        'Short sentences. Says the thing he is afraid of out loud, immediately, and then apologises for saying it. ' +
+        'Short sentences. Says the thing he is afraid of out loud, immediately, and then apologizes for saying it. ' +
         'Calls people "man" when he is scared.',
       motive: 'Get out of this room and be at a courthouse on Thursday morning as a free man.',
       reliability: 'mistaken',
@@ -241,7 +241,7 @@ export const LAST_JOB: ScenarioPackage = {
     },
     {
       id: 'sedan_truth',
-      statement: 'The grey sedan on the corner is {value}.',
+      statement: 'The gray sedan on the corner is {value}.',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_sedan_window', 'p_sedan_marla'],
@@ -375,7 +375,7 @@ export const LAST_JOB: ScenarioPackage = {
       via_verb: ['ask', 'press'],
       via_target: ['dez'],
       requires: { knows: { actor: 'dez', fact: 'sedan_truth' } },
-      topic_hints: ['car', 'sedan', 'corner', 'street', 'outside', 'grey', 'gray', 'saw', 'window', 'police', 'cop'],
+      topic_hints: ['car', 'sedan', 'corner', 'street', 'outside', 'gray', 'parked', 'saw', 'window', 'police', 'cop'],
       // '@holder_belief' means he passes on what he holds — which is wrong. That is the
       // sincere mistake working as designed, and it is why the reversal lands later.
       disclosure: { status: 'told', value: '@holder_belief', confidence: 0.75, fidelity: 0.9 },
@@ -387,7 +387,7 @@ export const LAST_JOB: ScenarioPackage = {
       via_verb: ['ask'],
       via_target: ['marla'],
       requires: { knows: { actor: 'marla', fact: 'sedan_truth' } },
-      topic_hints: ['car', 'sedan', 'corner', 'street', 'outside', 'grey', 'gray'],
+      topic_hints: ['car', 'sedan', 'corner', 'street', 'outside', 'gray', 'parked'],
       disclosure: { status: 'told', value: '@holder_belief', confidence: 0.8 },
     },
 
@@ -469,7 +469,7 @@ export const LAST_JOB: ScenarioPackage = {
       leak_source: { from_variable: 'leak' },
       who_was_out: { from_variable: 'leak' },
       call_time: { value: '11:04' },
-      sedan_truth: { value: 'a courier waiting on a two-storey walk-up' },
+      sedan_truth: { value: 'a courier waiting on a two-story walk-up' },
       camera_loop: { value: 'looping the same ninety seconds' },
       marla_debt: { value: 'a man named Reyes' },
       dez_court: { value: 'Thursday' },
@@ -725,7 +725,7 @@ export const LAST_JOB: ScenarioPackage = {
         { kind: 'flag', id: 'phone_rang', value: true },
         { kind: 'resource', id: 'heat', from: 'world', to: 'you', amount: 1 },
       ],
-      line: 'The house phone rings once — a single half-ring, cut off, like somebody dialled and thought better of it. Nobody moves to answer it.',
+      line: 'The house phone rings once — a single half-ring, cut off, like somebody dialed and thought better of it. Nobody moves to answer it.',
       summary: 'The house phone rings once and stops.',
     },
     {
@@ -781,7 +781,7 @@ export const LAST_JOB: ScenarioPackage = {
         },
       ],
       line:
-        "Down on the corner the grey sedan's door opens and a kid in a red shell jacket climbs out with an insulated bag and jogs into the walk-up next to the laundromat. The car has been sitting there for forty minutes because somebody on the third floor ordered food.",
+        "Down on the corner the gray sedan's door opens and a kid in a red shell jacket climbs out with an insulated bag and jogs into the walk-up next to the laundromat. The car has been sitting there for forty minutes because somebody on the third floor ordered food.",
       summary: 'The sedan is revealed as a courier — the thing that started this panic was never anything.',
     },
     {

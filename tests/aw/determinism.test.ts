@@ -26,7 +26,7 @@ test('A3 — the same seed and the same actions reproduce an identical world', a
   await play(a, SCRIPT);
   await play(b, SCRIPT);
 
-  // run ids differ by design, so normalise them out before comparing
+  // run ids differ by design, so normalize them out before comparing
   const norm = (s: string, id: string) => s.split(id).join('RUN');
   assert.equal(norm(fingerprintWorld(a), 'run-a'), norm(fingerprintWorld(b), 'run-b'));
 });

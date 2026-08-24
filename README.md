@@ -71,7 +71,7 @@ supabase/          the schema. Truth is write-once and events append-only, in Po
 ## The twelve-measurement overlay
 
 Your Move is entertainment, but the same run can be read through the leadership-failure
-lens when someone asks for it: the Tier A / Tier B behavioural panel, twelve markers,
+lens when someone asks for it: the Tier A / Tier B behavioral panel, twelve markers,
 computed over this engine's event spine.
 
 It is **off by default and invisible to players**. A facilitator turns it on with a
