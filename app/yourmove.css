@@ -272,3 +272,12 @@ body { -webkit-font-smoothing: antialiased; }
 }
 .ym-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
 .ym-actions .ym-button { margin-top: 0; }
+
+.ym-mic { white-space: nowrap; }
+.ym-mic-live { border-color: var(--ym-hot); color: var(--ym-hot); }
+.ym-mic-live::before {
+  content: '●'; margin-right: 6px; animation: ym-pulse 1.1s ease-in-out infinite;
+}
+@keyframes ym-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .ym-mic-live::before { animation: none; } }
+.ym-mic-note { margin-top: 8px; max-width: 68ch; }

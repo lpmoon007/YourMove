@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 
 import type { RunView } from '@/lib/yourmove/actions';
 import { submitAction } from '@/lib/yourmove/actions';
+import { useDictation } from './useDictation';
 
 export function PlayApp({ initial }: { initial: RunView }) {
   const [run, setRun] = useState<RunView>(initial);
@@ -36,6 +37,29 @@ export function PlayApp({ initial }: { initial: RunView }) {
       if ('error' in next) setError(next.error);
       else setRun(next);
     });
+  };
+
+  // Speaking fills the box; it never sends. A misheard word can end this run, so the
+  // player reads it back and commits, the same as if they had typed it.
+  //
+  // Anything already typed is kept and spoken words are added to it, because half a
+  // sentence typed and the rest said out loud is a thing people do, and swallowing what
+  // somebody already wrote would be its own small betrayal.
+  const spokenAfter = useRef('');
+  const voice = useDictation({
+    names: run.ui.present.map((p) => p.name),
+    disabled: pending || Boolean(run.ended),
+    onText: (heard, final) => {
+      const prefix = spokenAfter.current;
+      setText(prefix ? `${prefix} ${heard}` : heard);
+      if (final) inputRef.current?.focus();
+    },
+  });
+
+  const listen = () => {
+    if (voice.listening) return voice.stop();
+    spokenAfter.current = text.trim();
+    voice.start();
   };
 
   const ui = run.ui;
@@ -93,18 +117,45 @@ export function PlayApp({ initial }: { initial: RunView }) {
                   ref={inputRef}
                   className="ym-input"
                   value={text}
-                  placeholder="What do you do? Type anything."
+                  placeholder={
+                    voice.listening
+                      ? 'Listening…'
+                      : voice.supported
+                        ? 'What do you do? Say it or type it.'
+                        : 'What do you do? Type anything.'
+                  }
                   onChange={(e) => setText(e.target.value)}
                   disabled={pending}
                   autoComplete="off"
                 />
+                {voice.supported ? (
+                  <button
+                    className={`ym-send ym-mic${voice.listening ? ' ym-mic-live' : ''}`}
+                    type="button"
+                    onClick={listen}
+                    disabled={pending}
+                    aria-pressed={voice.listening}
+                    aria-label={voice.listening ? 'Stop listening' : 'Say your move out loud'}
+                  >
+                    {voice.listening ? 'Listening — tap to stop' : 'Speak'}
+                  </button>
+                ) : null}
                 <button className="ym-send" type="submit" disabled={pending || !text.trim()}>
                   {pending ? '…' : 'Do it'}
                 </button>
               </form>
             ) : null}
 
+            {voice.problem ? <p className="ym-error">{voice.problem}</p> : null}
             {error ? <p className="ym-error">{error}</p> : null}
+
+            {voice.supported && !run.ended ? (
+              <p className="ym-meta ym-mic-note">
+                Say it the way you would say it to someone: “ask the driver what he saw”. The words land in the box
+                and nothing happens until you send them. Your browser does the listening, and some browsers send the
+                audio to their own speech service to do it.
+              </p>
+            ) : null}
 
             {!run.ended && ui.verb_chips.length ? (
               <div className="ym-chips">

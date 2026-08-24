@@ -131,6 +131,9 @@ Full detail in `docs/ENGINE.md`. The short version:
 - A character can only use knowledge in its own knowledge state.
 - Blocks are diegetic: the world says why, in world. Never "you can't do that."
 - The event spine is append-only, with causality written at creation.
+- Nothing rewrites what a player said except in front of them. Dictation snaps a misheard
+  name to someone in the room, but it does it in the composer, where the words can be read
+  and changed before they are sent. The engine never silently retargets an action.
 
 ## 9. Build and verify
 
