@@ -23,6 +23,10 @@ export interface NarrationRequest {
   speaker: CharacterProjection | null;
   /** Authored lines (Director injects, world processes) that must survive intact. */
   authored_lines: string[];
+  /** Why the world made this harder than the player intended — a sealed drawer, an empty
+   *  pocket, a cold room. Diegetic (L10), and it must reach the page: this was being
+   *  computed and thrown away, which is how a constrained action came back as a shrug. */
+  constraint?: string | null;
   /** What the player learned this turn, already rendered. The Narrator may state these
    *  and nothing else — they are the only new facts in scope. */
   revealed: { statement: string; from: string | null }[];
@@ -99,6 +103,9 @@ export function validateNarration(text: string, req: NarrationRequest, pkg: Scen
  *  before the authored fallback. It never adds a fact: it restates the resolution. */
 export function localNarrate(req: NarrationRequest): string {
   const parts: string[] = [];
+  // The constraint comes first when there is one: it is the reason the rest reads the way
+  // it does, and after the fact it sounds like an excuse.
+  if (req.constraint) parts.push(req.constraint);
   if (req.summary) parts.push(req.summary);
   for (const r of req.revealed) parts.push(r.from ? `${r.from} gives you this much: ${r.statement}` : r.statement);
   for (const line of req.authored_lines) parts.push(line);

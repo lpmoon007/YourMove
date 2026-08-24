@@ -61,6 +61,12 @@ function prompt(req: NarrationRequest): string {
   lines.push(`THE PLAYER TYPED\n  ${req.player_text}`);
   lines.push(`WHAT THE RULES DECIDED (${req.outcome})\n  ${req.summary}`);
 
+  if (req.constraint)
+    lines.push(
+      `WHY IT WAS HARDER THAN THEY WANTED — the world says this, in world, and it must be ` +
+        `in the passage\n  ${req.constraint}`,
+    );
+
   if (req.revealed.length)
     lines.push(
       `WHAT THE PLAYER LEARNS THIS TURN — you may state these, and only these\n` +

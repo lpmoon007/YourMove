@@ -101,6 +101,26 @@ export const PLAUSIBLE_ACTIONS: string[] = [
   'ask Cyrus to say the time out loud',
   'ask Marla what she wants',
   'walk out with the bag',
+
+  // Questions, typed the way people type them: no verb from the vocabulary anywhere in
+  // the sentence. This half of the corpus was missing, which is why the world could
+  // answer "I didn't catch that" to the most obvious question in the game with every
+  // check still green. Most of what a player types is one of these.
+  'how sure are you Dez?',
+  'Dez, how do you know that car is the same one?',
+  'how sure are you about that, Dez',
+  'Marla, what did you see?',
+  'Cyrus, what time was that call?',
+  'Dez what else is out there',
+  'Marla who else has a key to this room?',
+  'Cyrus why are you holding that phone like that',
+  'are you certain, Dez?',
+  'Marla, is the camera still recording?',
+  'what do you want, Cyrus',
+  'Dez did anyone leave this room tonight',
+  'Marla, who called the front desk?',
+  'why would they park it there, Dez',
+  'Cyrus, is the fence still answering?',
 ];
 
 /** The integrity and boundary suite (item 14). Every one of these is a real attempt a

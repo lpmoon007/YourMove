@@ -281,3 +281,10 @@ body { -webkit-font-smoothing: antialiased; }
 @keyframes ym-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 @media (prefers-reduced-motion: reduce) { .ym-mic-live::before { animation: none; } }
 .ym-mic-note { margin-top: 8px; max-width: 68ch; }
+
+/* The clock reads in minutes and seconds and descends through the cost of a move. */
+.ym-clock-spending .ym-clock-num { color: var(--ym-hot); }
+.ym-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}

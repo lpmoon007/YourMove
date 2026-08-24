@@ -527,6 +527,9 @@ export const LAST_JOB: ScenarioPackage = {
       default_minutes: 2,
       requires_target: true,
       speech: true,
+      // "how sure are you, Dez?" is an ask. Most of what a player types is a question
+      // with no verb in it at all, and this is what makes those land.
+      question_verb: true,
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
@@ -1057,12 +1060,16 @@ export const LAST_JOB: ScenarioPackage = {
     'block.destroyed': 'What is left of {name} is not going to tell you anything.',
     'block.out_of_reach': '{name} is not within arm\'s reach, and crossing the room to get it is its own decision.',
     'block.sealed': '{name} does not open for you — not without making a noise about it.',
-    'block.no_target': 'Somebody in the room says it before you can. "{verb} who?"',
+    'block.no_target': 'Somebody in the room says it before you can. "{verb} {whom}?"',
     'block.broke': 'The {resource} is not there to spend. You already know that; you counted it twice.',
     'block.short': 'You have {held} of the {resource}, not {wanted}, and everyone in this room can do arithmetic.',
     'block.cold': '{name} looks at you the way you look at weather. Whatever this is, it is going to cost you first.',
     // clarification (item 7) — never a system error
-    clarify: "I didn't catch that. Say it plainly — who, and what do you want out of them?",
+    // Always spoken by whoever is nearest, so these are dialogue: no quotation marks, no
+    // stage directions. Three of them, because the same sentence twice reads as a machine.
+    clarify: 'Say who you are talking to. {present} — which one?',
+    'clarify.2': 'You have to say who, and you have to say what you want out of them.',
+    'clarify.3': 'Nobody in here can read your mind and the van is not waiting. Name one of us, or put your hands on something.',
     // narration fallbacks (item 12) — used when generation refuses or fails validation
     'narration.default': 'The room resettles around what just happened. Nobody fills the silence.',
     'narration.success': 'It lands. Whatever you were reaching for, you have some of it now.',

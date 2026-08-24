@@ -135,6 +135,10 @@ export async function takeTurn(world: World, rawText: string, deps: EngineDeps =
     outcome: cap.result === 'impossible' ? 'blocked' : (resolution?.outcome ?? 'failure'),
     projection: world.projectNarrator(),
     speaker: speakerId ? world.projectCharacter(speakerId) : null,
+    // A constraint the world imposed has to be spoken. It was being computed and then
+    // dropped, so a sealed drawer, an empty pocket or a cold room silently produced a
+    // vague half-result and the player was never told why (L10: the world says why).
+    constraint: cap.result === 'impossible' ? null : cap.constraint,
     authored_lines: [...proc.lines, ...(director?.line ? [director.line] : [])],
     revealed: (resolution?.reveals ?? []).map((r) => ({
       statement: world.renderFact(r.fact, world.knowledge.get(world.playerId, r.fact).value),
@@ -197,6 +201,25 @@ export async function takeTurn(world: World, rawText: string, deps: EngineDeps =
 
 // ---------------------------------------------------------------------------
 
+/** How many of the player's most recent moves in a row the world failed to understand. */
+function countTrailingUnclear(world: World): number {
+  let n = 0;
+  for (const e of [...world.spine.all()].reverse()) {
+    if (e.actor_type !== 'player') continue;
+    if (e.verb !== 'unclear') break;
+    n += 1;
+  }
+  return n;
+}
+
+const listOf = (names: string[]): string => {
+  // "me" belongs at the end of the list, the way anybody would say it.
+  const ordered = [...names.filter((n) => n !== 'me'), ...names.filter((n) => n === 'me')];
+  return ordered.length <= 1
+    ? (ordered[0] ?? 'nobody')
+    : `${ordered.slice(0, -1).join(', ')} or ${ordered[ordered.length - 1]}`;
+};
+
 function clarifyTurn(
   world: World,
   intent: Intent,
@@ -204,7 +227,16 @@ function clarifyTurn(
   _narrator: Narrator | null,
 ): TurnResult {
   const asker = world.presentActors()[0] ?? null;
-  const line = fallbackLine(world.pkg, 'clarify');
+
+  // The same sentence three times in a row reads as a stuck machine, not a room. The
+  // world rephrases, and it names who is standing there, because "who are you asking?" is
+  // only answerable if you know who is available to ask.
+  const runOfUnclear = countTrailingUnclear(world);
+  const key = runOfUnclear === 0 ? 'clarify' : `clarify.${Math.min(runOfUnclear, 2) + 1}`;
+  // The speaker refers to themselves as "me", because a person listing the room does not
+  // say their own name.
+  const present = world.presentActors().map((a) => (a === asker ? 'me' : world.displayName(a)));
+  const line = fallbackLine(world.pkg, key).replaceAll('{present}', listOf(present));
   const text = asker ? `${world.displayName(asker)}: "${line}"` : line;
 
   const { event } = world.commit([{ kind: 'clock', minutes: 0 }], {

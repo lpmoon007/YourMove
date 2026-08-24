@@ -142,6 +142,10 @@ export interface VerbDef {
   chip_when?: Pred;
   /** The verb is addressed to a person and can draw disclosure out of them. */
   speech?: boolean;
+  /** The verb a bare question becomes. "how sure are you, Dez?" names no verb, but it is
+   *  obviously a question put to somebody, and a world that answers it with "say that
+   *  plainly" is broken. At most one verb per package may claim this. */
+  question_verb?: boolean;
   /** Per-verb default effects by outcome class. This is the CONSTRAINT layer (L5):
    *  a handful of verbs carry defaults; nothing enumerates an entry per action. */
   effects_by_outcome?: Partial<Record<OutcomeClass, EffectTemplate[]>>;
@@ -435,9 +439,14 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   }
   if (!p.world.ending_out_of_time?.trim())
     err('no_clock_ending', 'world.ending_out_of_time is required — running out of time needs a sentence');
-  for (const v of p.verbs)
+  for (const v of p.verbs) {
     if (v.commitment && !v.commitment_line?.trim())
       err('no_commitment_line', `verb ${v.id} ends the run but has no ending sentence`);
+    if (v.question_verb && !(v.speech && v.requires_target))
+      err('bad_question_verb', `verb ${v.id} answers bare questions but is not a speech verb that takes a target`);
+  }
+  if (p.verbs.filter((v) => v.question_verb).length > 1)
+    err('two_question_verbs', 'more than one verb claims bare questions — a question can only mean one thing');
 
   // --- content descriptors, written before the scenario (Part 4) ---
   const cd = p.content_descriptors;

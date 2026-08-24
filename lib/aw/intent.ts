@@ -57,6 +57,13 @@ export function deterministicParse(input: ParseInput): Intent {
     }
   }
 
+  // --- a bare question is still a question ---------------------------------
+  //
+  // "how sure are you, Dez?" names no verb from the vocabulary, and answering it with
+  // "say that plainly" is the world admitting it was not listening. A question put to
+  // somebody in the room is the package's question verb, aimed at them.
+  const question = isQuestion(raw);
+
   // --- targets: any actor / entity / location named in the text ---
   const targets: string[] = [];
   const named = [
@@ -84,6 +91,12 @@ export function deterministicParse(input: ParseInput): Intent {
     } else if (/\bhalf\b/i.test(raw)) {
       resources.push({ id: firstResource.id, amount: -2 }); // -2 = "half"
     }
+  }
+
+  if (!verb && question) {
+    const asking = input.vocabulary.find((v) => v.question_verb) ?? input.vocabulary.find((v) => v.speech && v.requires_target);
+    // Only when there is somebody to ask. A question aimed at nobody is still unclear.
+    if (asking && targets.some((t) => input.surface.actors.some((a) => a.id === t))) verb = asking;
   }
 
   let secrecy: Intent['secrecy'] = 'open';
@@ -115,6 +128,24 @@ export function deterministicParse(input: ParseInput): Intent {
     raw,
     ...(verb ? {} : { description: raw }),
   };
+}
+
+const INTERROGATIVE =
+  /^(who|what|when|where|why|how|which|whose|is|are|was|were|do|does|did|can|could|will|would|should|have|has|had|am)$/i;
+
+/**
+ * A question mark, or the shape of one without it — people drop the mark, and they put
+ * the name first: "Marla who else has a key". So the interrogative is looked for in the
+ * opening few words rather than only at the very front.
+ */
+function isQuestion(raw: string): boolean {
+  if (/\?/.test(raw)) return true;
+  const opening = raw
+    .toLowerCase()
+    .split(/[^\p{L}']+/u)
+    .filter(Boolean)
+    .slice(0, 3);
+  return opening.some((w) => INTERROGATIVE.test(w));
 }
 
 function extractGoal(raw: string): string | null {

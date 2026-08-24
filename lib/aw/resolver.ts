@@ -97,7 +97,11 @@ function resolveDefault(world: World, intent: Intent, cap: CapabilityVerdict): R
   }
 
   // Reveals become knowledge effects in item 10, where information propagation is decided.
-  const reveals = outcome === 'failure' || outcome === 'backfire' ? [] : discoveries(world, intent, outcome);
+  const found =
+    outcome === 'failure' || outcome === 'backfire'
+      ? { reveals: [] as Resolution['reveals'], repeated: false }
+      : discoveries(world, intent, outcome);
+  const reveals = found.reveals;
 
   return {
     outcome,
@@ -108,24 +112,43 @@ function resolveDefault(world: World, intent: Intent, cap: CapabilityVerdict): R
     capability_score: round3(capability),
     opposition_score: round3(opposition),
     reveals,
-    summary: defaultSummary(world, intent, outcome, reveals.length),
+    summary: defaultSummary(world, intent, outcome, reveals.length, found.repeated),
   };
 }
 
 /** Which authored discovery paths this action opens. Two independent paths per critical
  *  fact is an authoring rule (Part 4); which one the player walked is recorded. */
-function discoveries(world: World, intent: Intent, outcome: OutcomeClass): Resolution['reveals'] {
+function discoveries(
+  world: World,
+  intent: Intent,
+  outcome: OutcomeClass,
+): { reveals: Resolution['reveals']; repeated: boolean } {
   const ctx = world.predContext();
   const out: Resolution['reveals'] = [];
+  // A question that lands on something the player already holds is not a failure and not
+  // a silence: the person says it again. Worth telling them apart, because "they gave you
+  // nothing" and "they repeated themselves" are different rooms to be standing in.
+  let repeated = false;
   const target = intent.targets[0] ?? null;
   // Whole words only. Substring matching made "about" contain "out", which opened the
   // who-left-the-room path on a question about a parked car.
-  const said = new Set(
-    `${intent.raw} ${intent.goal ?? ''}`
-      .toLowerCase()
-      .split(/[^\p{L}\p{N}]+/u)
-      .filter(Boolean),
-  );
+  const words = (text: string) =>
+    new Set(
+      text
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter(Boolean),
+    );
+  let said = words(`${intent.raw} ${intent.goal ?? ''}`);
+
+  // A follow-up is still about the last thing. "How sure are you?" names no subject and
+  // needs none: the player is plainly still on the car, because that is what this person
+  // was just talking about. Without this, the second question in every conversation is
+  // the one the world stops understanding.
+  if (target && world.character(target) && !opensAnything(world, intent, target, said)) {
+    const earlier = lastSubjectOf(world, target);
+    if (earlier) said = new Set([...said, ...words(earlier)]);
+  }
 
   for (const p of world.pkg.discovery_paths) {
     if (p.via_verb && !p.via_verb.includes(intent.verb)) continue;
@@ -143,7 +166,10 @@ function discoveries(world: World, intent: Intent, outcome: OutcomeClass): Resol
     // Re-hearing what you already believe teaches nothing. A CORRECTION, though, is
     // exactly how a reversal lands: a second path may contradict a first (item 18).
     const held = world.knowledge.get(world.playerId, p.fact);
-    if (held.status !== 'unknown' && held.value === value) continue;
+    if (held.status !== 'unknown' && held.value === value) {
+      repeated = true;
+      continue;
+    }
 
     out.push({
       fact: p.fact,
@@ -155,7 +181,49 @@ function discoveries(world: World, intent: Intent, outcome: OutcomeClass): Resol
     if (out.length >= 2) break;
     // the concrete value/fidelity ride on the path; item 10 reads them back via `via`
   }
-  return out;
+  return { reveals: out, repeated: repeated && out.length === 0 };
+}
+
+/** Would anything at all have opened on these words? Used to decide whether a question
+ *  is a fresh subject or a follow-up on the last one. */
+function opensAnything(world: World, intent: Intent, target: string, said: Set<string>): boolean {
+  return world.pkg.discovery_paths.some((p) => {
+    if (p.via_verb && !p.via_verb.includes(intent.verb)) return false;
+    if (p.via_target && !p.via_target.includes(target)) return false;
+    if (!p.via_verb && !p.via_target) return false;
+    return !p.topic_hints?.length || p.topic_hints.some((h) => said.has(h.toLowerCase()));
+  });
+}
+
+/**
+ * What this person is already on: the most recent thing said in the room that involved
+ * them. Either the player's last words to them, or — when the player has not spoken to
+ * them yet — the sentences about them in whatever the room last heard.
+ *
+ * Only the sentences naming them, never the whole passage. A block of scene-setting
+ * mentions everybody and everything, and inheriting all of it would let one vague
+ * question open doors the player never went near.
+ */
+function lastSubjectOf(world: World, target: string): string | null {
+  const name = world.displayName(target);
+  const mentions = new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+
+  for (const e of [...world.spine.all()].reverse()) {
+    if (e.actor_type === 'player' && e.verb !== 'unclear' && e.targets.includes(target)) {
+      const said = String(e.payload.raw_text ?? '').trim();
+      if (said) return said;
+      continue;
+    }
+    const text = String(e.payload.public_line ?? '').trim();
+    if (!text || !mentions.test(text)) continue;
+    const about = text
+      .split(/(?<=[.!?"])\s+/)
+      .filter((sentence) => mentions.test(sentence))
+      .join(' ')
+      .trim();
+    if (about) return about;
+  }
+  return null;
 }
 
 export function resolveDisclosureValue(world: World, path: DiscoveryPath, source: string): string | null {
@@ -232,9 +300,25 @@ function resolveOverride(
 
 // ---------------------------------------------------------------------------
 
-function defaultSummary(world: World, intent: Intent, outcome: OutcomeClass, revealed: number): string {
+function defaultSummary(
+  world: World,
+  intent: Intent,
+  outcome: OutcomeClass,
+  revealed: number,
+  repeated: boolean,
+): string {
   const t = intent.targets[0] ? world.displayName(intent.targets[0]!) : 'the room';
   const person = Boolean(intent.targets[0] && world.character(intent.targets[0]!));
+
+  // Saying somebody "keeps the rest where you can see them holding it" when they had
+  // nothing to give is the world inventing a withholding that never happened, and it
+  // reads as the game being broken. What actually happened gets said instead.
+  if (person && !revealed) {
+    if (repeated) return `${t} says it again, the same way, and does not add anything to it.`;
+    if (outcome === 'success' || outcome === 'partial')
+      return `${t} answers you, and there is nothing in it you did not already have.`;
+  }
+
   switch (outcome) {
     case 'success':
       return revealed

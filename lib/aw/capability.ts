@@ -88,10 +88,17 @@ export function checkCapability(world: World, intent: Intent): CapabilityVerdict
   }
 
   // --- a verb that needs a target and did not get one ----------------------
+  //
+  // This is a block, not a discount. There is no degraded version of searching nothing,
+  // and charging three minutes for a half-typed word is the world punishing a typo. The
+  // room asks what you meant and the clock stays where it was.
   if (verb?.requires_target && intent.targets.length === 0) {
-    worsen('permitted_with_constraint');
-    constraint = line('block.no_target', { verb: verb.label });
-    uncertainty += 0.2;
+    worsen('impossible');
+    reason = line('block.no_target', { verb: verb.label, whom: verb.object_verb ? 'what' : 'who' });
+    voiced_by = world.presentActors()[0] ?? null;
+    // Nothing was attempted, so nothing is charged. This is the room asking what you
+    // meant, and a clarifying question has never cost anybody a minute.
+    minutes = 0;
     checks.push({ check: 'target', passed: false });
   }
 

@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useTransition } from 'react';
 
 import type { RunView } from '@/lib/yourmove/actions';
 import { submitAction } from '@/lib/yourmove/actions';
+import { Clock } from './Clock';
 import { useDictation } from './useDictation';
 
 export function PlayApp({ initial }: { initial: RunView }) {
@@ -64,7 +65,6 @@ export function PlayApp({ initial }: { initial: RunView }) {
 
   const ui = run.ui;
   const remaining = ui.minutes_remaining;
-  const urgent = remaining !== null && remaining <= 5;
 
   return (
     <div className="ym-shell">
@@ -75,10 +75,7 @@ export function PlayApp({ initial }: { initial: RunView }) {
               You are <strong>{ui.you.role}</strong>. {ui.you.objective}
             </p>
           </div>
-          <div className={`ym-clock${urgent ? ' ym-clock-urgent' : ''}`}>
-            <span className="ym-clock-num">{remaining ?? '—'}</span>
-            <span className="ym-clock-unit">minutes left</span>
-          </div>
+          <Clock minutes={remaining} />
         </header>
 
         <div className="ym-body">

@@ -51,6 +51,12 @@ shipped with 41 green checks.
 
 Before saying a player-facing change is done: run it, look at it, and read it cold.
 
+A corpus written by someone who knows the verb list only ever tests the verb list. Every
+check was green while the world answered "I didn't catch that" to *how sure are you,
+Dez?* — because every action in the corpus started with a verb, and most of what a player
+types is a question with no verb in it at all. When adding coverage, add the sentences a
+stranger would type, not the ones the vocabulary suggests.
+
 ## 4. American English
 
 jewelry, gray, color, behavior, honor, story, rumor, dialed, and the -ize forms
