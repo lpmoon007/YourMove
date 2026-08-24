@@ -8,7 +8,7 @@ import type { RunOutcome } from '../outcome';
 import type { WorldSnapshot } from '../persistence';
 import type { Badge } from '../play/badges';
 import type { PlayEvidence } from '../play/observe';
-import type { RunStore, RunSummary, TurnRecord } from './types';
+import type { RunStore, RunSummary, StoredAccount, TurnRecord } from './types';
 
 interface Row {
   snapshot: WorldSnapshot;
@@ -20,10 +20,11 @@ interface Row {
 }
 
 const RUNS = new Map<string, Row>();
-const PLAYERS = new Map<string, { runs: string[]; evidence: PlayEvidence[]; badges: Map<string, Badge> }>();
+const PLAYERS = new Map<string, { runs: string[]; evidence: PlayEvidence[]; badges: Map<string, Badge>; account: string | null }>();
+const ACCOUNTS = new Map<string, StoredAccount>();
 const player = (id: string) => {
   let p = PLAYERS.get(id);
-  if (!p) { p = { runs: [], evidence: [], badges: new Map() }; PLAYERS.set(id, p); }
+  if (!p) { p = { runs: [], evidence: [], badges: new Map(), account: null }; PLAYERS.set(id, p); }
   return p;
 };
 
@@ -100,15 +101,52 @@ export const memoryStore: RunStore = {
     for (const b of badges) if (!p.badges.has(b.id)) p.badges.set(b.id, b);
   },
 
-  async playerEvidence(playerId) {
-    return [...player(playerId).evidence];
+  async playerEvidence(playerIds) {
+    return playerIds.flatMap((id) => player(id).evidence);
   },
 
-  async playerBadges(playerId) {
-    return [...player(playerId).badges.values()];
+  async playerBadges(playerIds) {
+    const seen = new Map<string, Badge>();
+    for (const id of playerIds) for (const [k, b] of player(id).badges) if (!seen.has(k)) seen.set(k, b);
+    return [...seen.values()];
   },
 
-  async playerRunOrder(playerId) {
-    return [...player(playerId).runs];
+  async playerRunOrder(playerIds) {
+    // Oldest first, across every device on the account — the recency ordering the
+    // profile weights by has to be one timeline, not one per device.
+    return playerIds
+      .flatMap((id) => player(id).runs)
+      .sort((a, b) => (RUNS.get(a)?.created_at ?? '').localeCompare(RUNS.get(b)?.created_at ?? ''));
+  },
+
+  async createAccount(input) {
+    ACCOUNTS.set(input.account_id, {
+      id: input.account_id,
+      display_name: input.display_name,
+      secret_hash: input.secret_hash,
+      created_at: new Date().toISOString(),
+    });
+  },
+
+  async accountById(accountId) {
+    return ACCOUNTS.get(accountId) ?? null;
+  },
+
+  async attachPlayer(playerId, accountId) {
+    player(playerId).account = accountId;
+  },
+
+  async accountForPlayer(playerId) {
+    const a = player(playerId).account;
+    return a ? (ACCOUNTS.get(a) ?? null) : null;
+  },
+
+  async devicesForAccount(accountId) {
+    return [...PLAYERS.entries()].filter(([, p]) => p.account === accountId).map(([id]) => id);
+  },
+
+  async setDisplayName(accountId, name) {
+    const a = ACCOUNTS.get(accountId);
+    if (a) a.display_name = name;
   },
 };

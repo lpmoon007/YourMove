@@ -197,6 +197,51 @@ export function observePlay(world: World): PlayEvidence[] {
       confidence: 0.5,
     });
 
+  return mergeByOpportunity(out);
+}
+
+/**
+ * One moment, one reading per dimension.
+ *
+ * An authored signal and a derived one often see the same thing in the same event —
+ * "you brought Dez into it" and "you asked instead of working around them" are one
+ * choice, not two. Left alone they would count that choice twice in the profile, and the
+ * database would silently drop one of them anyway: the evidence table is unique on
+ * (run_id, opportunity_id, dimension). Merging here means the stored profile and the
+ * in-process one are the same profile.
+ *
+ * Corroborating readings keep the stronger reading's weight; readings that disagree pull
+ * against each other and can cancel the moment out entirely, which is correct — a move
+ * the world reads two ways says nothing about which way you lean.
+ */
+function mergeByOpportunity(evidence: PlayEvidence[]): PlayEvidence[] {
+  const groups = new Map<string, PlayEvidence[]>();
+  for (const e of evidence) {
+    const key = `${e.run_id}|${e.opportunity_id}|${e.dimension}`;
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(e);
+    else groups.set(key, [e]);
+  }
+
+  const out: PlayEvidence[] = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      out.push(group[0]!);
+      continue;
+    }
+    const weight = (e: PlayEvidence) => e.strength * e.confidence;
+    const total = group.reduce((n, e) => n + weight(e), 0);
+    const direction = total > 0 ? group.reduce((n, e) => n + e.direction * weight(e), 0) / total : 0;
+    if (Math.abs(direction) < 0.05) continue;
+    // The reading that carried the most weight is the one whose words the player sees.
+    const lead = group.reduce((best, e) => (weight(e) > weight(best) ? e : best), group[0]!);
+    out.push({
+      ...lead,
+      direction: clamp(direction),
+      strength: Math.max(...group.map((e) => e.strength)),
+      confidence: Math.max(...group.map((e) => e.confidence)),
+    });
+  }
   return out;
 }
 

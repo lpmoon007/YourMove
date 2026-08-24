@@ -34,6 +34,28 @@ async function playedRun(moves: string[], id = 'play-1') {
 const TALKER = ['ask Dez about the parked car', 'read the call log', 'offer Marla ten thousand', 'ask Marla who called the police', 'accuse Marla'];
 const BRUISER = ['search the call log', 'press Dez', 'press Cyrus', 'accuse Cyrus'];
 
+test('one moment produces at most one reading per dimension', async () => {
+  // The evidence table is unique on (run_id, opportunity_id, dimension). If two readings
+  // of the same moment ever reach it, the database keeps one and the profile the player
+  // sees stops matching the run they just played. Merging happens in observePlay; this is
+  // the check that it kept up with new signals.
+  for (const [label, moves] of [
+    ['talker', TALKER],
+    ['bruiser', BRUISER],
+    ['spender', ['offer Marla ten thousand', 'pay Cyrus to make the call', 'give Dez ten grand and tell him to drive', 'walk out with the bag']],
+    ['looker', ['read the call log', 'search the tablet', 'look out the window at the car', 'open the duffel and count it', 'wait']],
+    ['quiet', ['quietly ask Cyrus about Marla', 'pull Dez aside and ask who left the room', 'say nothing and watch Marla', 'accuse Marla']],
+  ] as [string, string[]][]) {
+    const world = await playedRun(moves, `dup-${label}`);
+    const seen = new Set<string>();
+    for (const e of observePlay(world)) {
+      const key = `${e.run_id}|${e.opportunity_id}|${e.dimension}`;
+      assert.equal(seen.has(key), false, `${label}: two readings of ${e.dimension} for one moment (${key})`);
+      seen.add(key);
+    }
+  }
+});
+
 test('no dimension copy describes a person', () => {
   for (const d of CORE_EIGHT) {
     for (const [where, line] of [

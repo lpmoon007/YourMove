@@ -265,3 +265,10 @@ body { -webkit-font-smoothing: antialiased; }
 }
 .ym-runcard-bar { flex: 1; height: 8px; background: var(--ym-line); }
 .ym-runcard-bar span { display: block; height: 100%; background: var(--ym-cool); }
+
+.ym-code {
+  margin: 10px 0; padding: 14px 16px; background: var(--ym-panel); border: 1px solid var(--ym-hot);
+  font-size: 18px; letter-spacing: 0.04em; word-break: break-word; user-select: all;
+}
+.ym-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; }
+.ym-actions .ym-button { margin-top: 0; }

@@ -1,4 +1,5 @@
 import { CORE_EIGHT } from '@/lib/aw/play';
+import { accountView } from '@/lib/yourmove/account';
 import { howYouPlay } from '@/lib/yourmove/actions';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,7 @@ export const dynamic = 'force-dynamic';
 // dimension copy, and the same discipline applies to every sentence written here.
 export default async function HowYouPlayPage() {
   const { profile, badges, runs } = await howYouPlay();
+  const account = await accountView();
   const tested = profile.reads.filter((r) => r.position !== null);
   const visibleBadges = badges.filter((b) => !b.secret);
   const secretsFound = badges.filter((b) => b.secret);
@@ -24,9 +26,14 @@ export default async function HowYouPlayPage() {
           This page fills in as you play. It watches what you actually do — whether you push or negotiate, move
           early or wait, hold what you have or spend it — and shows you the pattern.
         </p>
-        <a className="ym-button" href="/">
-          Play a world →
-        </a>
+        <p className="ym-actions">
+          <a className="ym-button" href="/">
+            Play a world →
+          </a>
+          <a className="ym-button" href="/account">
+            Play code →
+          </a>
+        </p>
       </div>
     );
   }
@@ -43,7 +50,10 @@ export default async function HowYouPlayPage() {
       </p>
       <p className="ym-meta">
         Read from {runs} run{runs === 1 ? '' : 's'} across {profile.worlds.length} world
-        {profile.worlds.length === 1 ? '' : 's'}.
+        {profile.worlds.length === 1 ? '' : 's'}.{' '}
+        {account.signed_in
+          ? `On your play code${account.devices > 1 ? `, across ${account.devices} devices` : ''}.`
+          : 'Only on this browser — a play code carries it to your other devices.'}
       </p>
 
       {profile.title ? (
@@ -169,9 +179,12 @@ export default async function HowYouPlayPage() {
           ? `${CORE_EIGHT.length - tested.length} of the eight have not come up yet — a world has to actually put you in the situation before there is anything to read.`
           : ''}
       </p>
-      <p>
+      <p className="ym-actions">
         <a className="ym-button" href="/">
           Play again →
+        </a>
+        <a className="ym-button" href="/account">
+          {account.signed_in ? 'Your play code →' : 'Keep this on another device →'}
         </a>
       </p>
     </div>

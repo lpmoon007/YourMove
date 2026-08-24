@@ -10,7 +10,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { WorldSnapshot } from '../persistence';
 import type { Badge } from '../play/badges';
 import type { PlayEvidence } from '../play/observe';
-import type { RunStore, RunSummary } from './types';
+import type { RunStore, RunSummary, StoredAccount } from './types';
 import { YM_SUPABASE_URL, ymServiceRoleKey } from '@/lib/yourmove/env';
 
 /** Supabase returns errors rather than throwing them. Silence is not acceptable for the
@@ -24,6 +24,13 @@ function orThrow(
   if (!e) return;
   if (e.code && ignoreCodes.includes(e.code)) return;
   throw new Error(`Your Move store: ${what} failed — ${e.message}`);
+}
+
+/** The database has not had the accounts migration applied yet. Reading is allowed to
+ *  shrug at this — the game is playable without accounts and should not go down for one
+ *  — but writing is not: minting a code that goes nowhere is worse than an error. */
+function accountsSchemaMissing(error: { code?: string } | null): boolean {
+  return error?.code === '42P01' || error?.code === '42703';
 }
 
 let client: SupabaseClient | null = null;
@@ -235,11 +242,12 @@ export const supabaseStore: RunStore = {
     );
   },
 
-  async playerEvidence(playerId) {
+  async playerEvidence(playerIds) {
+    if (!playerIds.length) return [];
     const res = await db()
       .from('aw_play_evidence')
       .select('*')
-      .eq('player_id', playerId)
+      .in('player_id', playerIds)
       .order('created_at', { ascending: true });
     orThrow('reading play evidence', res);
     return (res.data ?? []).map(
@@ -260,14 +268,25 @@ export const supabaseStore: RunStore = {
     );
   },
 
-  async playerBadges(playerId) {
+  async playerBadges(playerIds) {
+    if (!playerIds.length) return [];
     const res = await db()
       .from('aw_badge_award')
       .select('*')
-      .eq('player_id', playerId)
-      .order('earned_at', { ascending: false });
+      .in('player_id', playerIds)
+      .order('earned_at', { ascending: true });
     orThrow('reading badges', res);
-    return (res.data ?? []).map(
+    // A badge is earned once per person, not once per device: two devices on one account
+    // that both qualified show the earlier award, not two copies of it.
+    const seen = new Set<string>();
+    return (res.data ?? [])
+      .filter((r) => {
+        const id = r.badge_id as string;
+        if (seen.has(id)) return false;
+        seen.add(id);
+        return true;
+      })
+      .map(
       (r): Badge => ({
         id: r.badge_id as string,
         name: r.name as string,
@@ -281,14 +300,82 @@ export const supabaseStore: RunStore = {
     );
   },
 
-  async playerRunOrder(playerId) {
+  async playerRunOrder(playerIds) {
+    if (!playerIds.length) return [];
     const res = await db()
       .from('aw_run')
       .select('id')
-      .eq('player_id', playerId)
+      .in('player_id', playerIds)
       .order('created_at', { ascending: true });
     orThrow('reading the run order', res);
     return (res.data ?? []).map((r) => r.id as string);
+  },
+
+  // --- lightweight accounts --------------------------------------------------
+  //
+  // No email, no password, nothing personal. The row holds a display name the player
+  // chose and the scrypt hash of the secret half of their play code, and that is all.
+
+  async createAccount(input) {
+    orThrow(
+      'creating the account',
+      await db().from('aw_account').insert({
+        id: input.account_id,
+        display_name: input.display_name,
+        secret_hash: input.secret_hash,
+      }),
+    );
+  },
+
+  async accountById(accountId) {
+    const res = await db()
+      .from('aw_account')
+      .select('id, display_name, secret_hash, created_at')
+      .eq('id', accountId)
+      .maybeSingle();
+    if (accountsSchemaMissing(res.error)) return null;
+    orThrow('looking up the account', res);
+    return res.data ? (res.data as StoredAccount) : null;
+  },
+
+  async attachPlayer(playerId, accountId) {
+    orThrow(
+      'registering the device',
+      await db()
+        .from('aw_player')
+        .upsert({ id: playerId, last_seen_at: new Date().toISOString() }, { onConflict: 'id' }),
+    );
+    orThrow(
+      'attaching the device to the account',
+      await db().from('aw_player').update({ account_id: accountId }).eq('id', playerId),
+    );
+    orThrow(
+      'touching the account',
+      await db().from('aw_account').update({ last_seen_at: new Date().toISOString() }).eq('id', accountId),
+    );
+  },
+
+  async accountForPlayer(playerId) {
+    const link = await db().from('aw_player').select('account_id').eq('id', playerId).maybeSingle();
+    if (accountsSchemaMissing(link.error)) return null;
+    orThrow('reading the device link', link);
+    const accountId = link.data?.account_id as string | null | undefined;
+    if (!accountId) return null;
+    return this.accountById(accountId);
+  },
+
+  async devicesForAccount(accountId) {
+    const res = await db().from('aw_player').select('id').eq('account_id', accountId);
+    if (accountsSchemaMissing(res.error)) return [];
+    orThrow('listing the devices on the account', res);
+    return (res.data ?? []).map((r) => r.id as string);
+  },
+
+  async setDisplayName(accountId, name) {
+    orThrow(
+      'saving the display name',
+      await db().from('aw_account').update({ display_name: name }).eq('id', accountId),
+    );
   },
 };
 

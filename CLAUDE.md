@@ -79,6 +79,10 @@ is how you tended to play in these worlds." It never says "this is who you are."
 - Opposite runs read as context-dependent. Never average two contradictory nights into a
   confident middle — the contradiction is the interesting part, so surface it.
 - Every read cites the events behind it, and counter-evidence is shown, not hidden.
+- One moment produces one reading per dimension. An authored signal and a derived one that
+  see the same event are merged in `observePlay`, because the evidence table is unique on
+  `(run_id, opportunity_id, dimension)` and would otherwise drop one silently, leaving the
+  stored profile disagreeing with the run the player just finished.
 
 **The architectural rule, enforced by a test:** the simulation emits events; the pattern
 engine reads them afterward.
@@ -90,7 +94,26 @@ resolution. The scenario declares what its own verbs mean (`play_signals`), beca
 the world knows that pressing someone is force — but it declares it as data the runtime
 never reads.
 
-## 7. Engine laws that are never negotiable
+## 7. Accounts hold nothing personal
+
+An account is one play code — `ym-4f2a9c-raven-tunnel-quiet-ash-mercy` — and nothing
+else. No email, no password, no verification step, no recovery flow that needs a person's
+details. It exists for exactly one reason: so a profile survives a different device.
+
+- A `aw_player` row is a DEVICE, not a person. An account ties several of them together,
+  and a profile is read across all of them at once.
+- Only the scrypt hash of the secret half is stored. The code is shown once, on the screen
+  that minted it, and the server genuinely cannot show it again. Say so on that screen.
+- Playing anonymously stays a first-class path. Nothing gates a run behind a code, and
+  anonymous play is merged into an account the first time a code is used on that device.
+- Signing out deletes nothing: the browser gets a fresh device id and the account keeps
+  everything.
+- An unknown account and a wrong secret return the same message. A stranger holding half
+  a code should not learn which half is right.
+- A test enumerates every field on an account. Adding anything personal has to break it
+  first.
+
+## 8. Engine laws that are never negotiable
 
 Full detail in `docs/ENGINE.md`. The short version:
 
@@ -103,7 +126,7 @@ Full detail in `docs/ENGINE.md`. The short version:
 - Blocks are diegetic: the world says why, in world. Never "you can't do that."
 - The event spine is append-only, with causality written at creation.
 
-## 8. Build and verify
+## 9. Build and verify
 
 ```bash
 npm run test:aw     # the harness — no key, no database needed
@@ -113,12 +136,13 @@ npm run build       # type-check + compile
 Both must pass before pushing. For player-facing changes, also run the app and look at
 the screen.
 
-## 9. Repository shape
+## 10. Repository shape
 
 ```
 lib/aw/            engine — pure TypeScript, no I/O, no scenario knowledge
 lib/aw/play/       How You Play — reads finished runs, never read BY the engine
 content/yourmove/  worlds, as data. No logic: conditions are a declarative language
+lib/yourmove/      server actions, the session/account layer, and app-only glue
 app/, components/  the play interface and the facilitator console
 tests/aw/          the simulation harness
 supabase/          the schema (its own Supabase project)

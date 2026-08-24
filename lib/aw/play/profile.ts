@@ -109,8 +109,19 @@ export function buildProfile(
         return { label: k, position: t ? inGroup.reduce((n, e) => n + e.direction * weightOf(e), 0) / t : 0 };
       });
     };
-    const spreadOf = (g: { position: number }[]) =>
-      g.length > 1 ? Math.max(...g.map((x) => x.position)) - Math.min(...g.map((x) => x.position)) : 0;
+    /**
+     * A read is context-dependent when the groups point OPPOSITE WAYS, not merely when
+     * they differ by some amount. Negotiating one night and escalating the next is a
+     * contradiction worth showing; leaning hard one way and leaning a little harder the
+     * next is the same lean. So both ends have to clear the middle, and the gap between
+     * them has to be wide enough that it is not noise.
+     */
+    const split = (g: { position: number }[]) => {
+      if (g.length < 2) return false;
+      const lo = Math.min(...g.map((x) => x.position));
+      const hi = Math.max(...g.map((x) => x.position));
+      return hi - lo >= 0.7 && lo <= -0.15 && hi >= 0.15;
+    };
 
     const perWorld = groupBy((e) => e.world_id);
     const perRun = groupBy((e) => e.run_id);
@@ -119,11 +130,11 @@ export function buildProfile(
     let varies_by: 'world' | 'run' | null = null;
     let variation: { label: string; position: number }[] | null = null;
     if (mine.length < 3) confidence = 'emerging';
-    else if (perWorld.length >= 2 && spreadOf(perWorld) >= 0.8) {
+    else if (split(perWorld)) {
       confidence = 'context-dependent';
       varies_by = 'world';
       variation = perWorld;
-    } else if (perRun.length >= 2 && spreadOf(perRun) >= 0.9) {
+    } else if (split(perRun)) {
       // Same world, opposite nights. Still not one number.
       confidence = 'context-dependent';
       varies_by = 'run';

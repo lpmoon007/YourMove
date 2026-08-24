@@ -42,9 +42,27 @@ export interface RunStore {
   claimRun(runId: string, playerId: string): Promise<void>;
   savePlayEvidence(playerId: string, evidence: PlayEvidence[]): Promise<void>;
   saveBadges(playerId: string, badges: Badge[]): Promise<void>;
-  /** All evidence for one player, oldest run first. */
-  playerEvidence(playerId: string): Promise<PlayEvidence[]>;
-  playerBadges(playerId: string): Promise<Badge[]>;
-  /** Run ids for this player, oldest first — the recency ordering the profile needs. */
-  playerRunOrder(playerId: string): Promise<string[]>;
+  /** Evidence for these devices, oldest run first. One device when playing anonymously;
+   *  every device on the account once signed in. */
+  playerEvidence(playerIds: string[]): Promise<PlayEvidence[]>;
+  playerBadges(playerIds: string[]): Promise<Badge[]>;
+  /** Run ids across these devices, oldest first — the recency ordering the profile needs. */
+  playerRunOrder(playerIds: string[]): Promise<string[]>;
+
+  // --- lightweight accounts: no email, no password, one play code ------------
+  createAccount(input: { account_id: string; display_name: string | null; secret_hash: string }): Promise<void>;
+  accountById(accountId: string): Promise<StoredAccount | null>;
+  /** Attach a device to an account. This is also what merges anonymous play in. */
+  attachPlayer(playerId: string, accountId: string): Promise<void>;
+  accountForPlayer(playerId: string): Promise<StoredAccount | null>;
+  /** Every device on an account, so one profile can be read across all of them. */
+  devicesForAccount(accountId: string): Promise<string[]>;
+  setDisplayName(accountId: string, name: string): Promise<void>;
+}
+
+export interface StoredAccount {
+  id: string;
+  display_name: string | null;
+  secret_hash: string;
+  created_at: string;
 }
