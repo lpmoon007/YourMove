@@ -43,6 +43,21 @@ export default async function Entry({ searchParams }: { searchParams: Promise<{ 
           </p>
         </div>
         <div className="ym-brief-row">
+          <h2>Who is in the room with you</h2>
+          <ul className="ym-cast-intro">
+            {LAST_JOB.cast.map((c) => (
+              <li key={c.id}>
+                <strong>{c.name}</strong>
+                <span className="ym-cast-role">{c.role}</span>
+                <span className="ym-cast-line">{c.intro}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="ym-meta">
+            These three people and you are the only ones who knew about tonight. Nobody else is coming.
+          </p>
+        </div>
+        <div className="ym-brief-row">
           <h2>The trouble</h2>
           <p>{w.trouble}</p>
         </div>

@@ -129,6 +129,7 @@ export function PlayApp({ initial }: { initial: RunView }) {
                     <strong>{p.name}</strong>
                     <span className="ym-role">{p.role}</span>
                     <span className="ym-mood">{p.disposition_read}</span>
+                    <span className="ym-cast-line">{p.intro}</span>
                   </li>
                 ))}
                 {!ui.present.length ? <li className="ym-empty">You are alone.</li> : null}

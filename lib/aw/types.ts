@@ -193,7 +193,7 @@ export interface UiProjection {
   clock: number;
   minutes_remaining: number | null;
   location: { id: string; name: string; description: string } | null;
-  present: { id: string; name: string; role: string; disposition_read: string }[];
+  present: { id: string; name: string; role: string; intro: string; disposition_read: string }[];
   resources: { id: string; label: string; amount: number }[];
   flags_visible: Record<string, string | number | boolean>;
   documents: { id: string; title: string; body: string }[];
@@ -259,7 +259,12 @@ export interface CharacterDef {
   name: string;
   role: string;
   voice: string; // how they talk — the Narrator's dialogue direction
-  motive: string; // stable within a run (item 15)
+  /** What the PLAYER already knows about this person, in one line: who they are to you
+   *  and why they are here. Shown before the run starts. It must contain no secret —
+   *  never their motive, never their reliability, never what they know. A player should
+   *  never meet a name they have not been introduced to. */
+  intro: string;
+  motive: string; // stable within a run (item 15) — NOT shown to the player
   reliability: ReliabilityProfile;
   competence: number; // 0..1
   start_location: string;

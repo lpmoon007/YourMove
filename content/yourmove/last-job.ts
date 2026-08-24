@@ -32,14 +32,16 @@ export const LAST_JOB: ScenarioPackage = {
       'the getaway van leaves without whoever is still arguing.',
     setup:
       'Forty minutes ago you and three other people robbed the night safe of a jewelry wholesaler four ' +
-      'blocks from here. It went exactly to plan: nobody was hurt, nobody was caught, no alarm went off. ' +
-      'You are all now in Room 1114 of the Meridian Hotel, which Marla — the night manager, and one of the ' +
-      'four of you — arranged as the place to sit for an hour before splitting up. Forty thousand dollars ' +
-      'in cash is in a canvas duffel on the bed. A van is waiting downstairs to take you out of the city.',
+      'blocks from here. It went exactly to plan: nobody was hurt, nobody was caught, and no alarm went ' +
+      'off. The four of you are now sitting out the hour in Room 1114 of the Meridian Hotel — a room one ' +
+      'of your own crew arranged, because she manages the place. Forty thousand dollars in cash is in a ' +
+      'canvas duffel on the bed. A van is waiting downstairs to drive you out of the city. In nineteen ' +
+      'minutes it leaves, with or without any of you.',
     trouble:
-      'Dez is certain there is an unmarked police car parked on the corner. If he is right, somebody made a ' +
-      'phone call from this building tonight, and it was one of the three people standing in front of you. ' +
-      'If he is wrong, you are about to destroy your own crew over a parked car — and the van leaves either way.',
+      'Your driver is certain the gray sedan parked on the corner is an unmarked police car. Nobody outside ' +
+      'these four people knew this room existed. So if he is right, one of the three people standing in ' +
+      'front of you picked up a phone tonight and gave you away. And if he is wrong, you are about to tear ' +
+      'your own crew apart over somebody else\'s parked car. The van leaves in nineteen minutes either way.',
     cold_open:
       "The money is on the bed in a canvas duffel and nobody has touched it in four minutes, which is how " +
       "you know something is wrong. Dez is at the window with two fingers in the blind. Marla is standing " +
@@ -61,7 +63,7 @@ export const LAST_JOB: ScenarioPackage = {
         'out which one before you decide who gets in the van. If none of them did, do not talk yourself ' +
         'into believing otherwise.',
       pressure:
-        'Dez has been watching that car through the blinds for four minutes and he is close to walking ' +
+        'Your driver has been watching that car through the blinds for four minutes and is close to going ' +
         'down to the van without the rest of you.',
     },
     duration_minutes: 19,
@@ -165,6 +167,9 @@ export const LAST_JOB: ScenarioPackage = {
       reliability: 'mistaken',
       competence: 0.5,
       start_location: 'room',
+      intro:
+        'Your driver. Four jobs with you, never once late to a pickup, and he says every frightening ' +
+        'thought out loud the moment he has it. He has the van keys in his pocket.',
       leverage: 'He has the van and the only route off this block that does not pass a camera.',
       starting_disposition: { trust: 25, fear: 55 },
       knows: ['who_was_out', 'dez_court'],
@@ -186,6 +191,9 @@ export const LAST_JOB: ScenarioPackage = {
       reliability: 'deceptive',
       competence: 0.75,
       start_location: 'room',
+      intro:
+        'Your inside woman, and the reason you are standing here. She manages this hotel at night: she ' +
+        'got you the room, the service lift, and the cameras on the eleventh floor.',
       leverage: 'She has the service-lift key, the camera loop, and she saw the call go out.',
       starting_disposition: { trust: 5, fear: 20 },
       knows: ['leak_source', 'camera_loop', 'sedan_truth', 'cyrus_skim', 'call_time'],
@@ -204,6 +212,9 @@ export const LAST_JOB: ScenarioPackage = {
       reliability: 'self_serving',
       competence: 0.65,
       start_location: 'room',
+      intro:
+        'Your money. He put up the cash to set this job up and he owns the buyer on the other end, which ' +
+        'means nobody gets paid until he makes a phone call.',
       leverage: "He has the fence's number and the only clock that matters after this one.",
       starting_disposition: { trust: -5, fear: 15 },
       knows: ['call_time', 'buyer_window', 'marla_debt'],

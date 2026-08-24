@@ -88,7 +88,8 @@ body { -webkit-font-smoothing: antialiased; }
   color: var(--ym-dim); font-weight: 600;
 }
 .ym-side ul { list-style: none; margin: 0; padding: 0; font-size: 14px; }
-.ym-cast li { padding: 6px 0; border-bottom: 1px solid var(--ym-line); }
+.ym-cast li { padding: 8px 0; border-bottom: 1px solid var(--ym-line); }
+.ym-cast .ym-cast-line { font-size: 12px; color: var(--ym-dim); margin-top: 4px; line-height: 1.45; }
 .ym-cast strong { display: block; }
 .ym-role { color: var(--ym-dim); font-size: 12px; margin-right: 8px; }
 .ym-mood { color: var(--ym-cool); font-size: 12px; }
@@ -125,6 +126,14 @@ body { -webkit-font-smoothing: antialiased; }
 .ym-contract[open] summary::before { content: '▾ '; }
 .ym-contract summary:hover { color: var(--ym-ink); }
 .ym-you { margin: 0; font-size: 13px; color: var(--ym-dim); }
+.ym-cast-intro { list-style: none; margin: 0; padding: 0; }
+.ym-cast-intro li { padding: 10px 0; border-bottom: 1px solid var(--ym-line); }
+.ym-cast-intro li:last-child { border-bottom: none; }
+.ym-cast-intro strong { color: var(--ym-hot); margin-right: 8px; }
+.ym-cast-role {
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ym-dim);
+}
+.ym-cast-line { display: block; margin-top: 3px; font-size: 14px; color: var(--ym-ink); }
 
 /* --- entry / contract screen --- */
 .ym-gate { max-width: 640px; margin: 0 auto; padding: 48px 20px; }

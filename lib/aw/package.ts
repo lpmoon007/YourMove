@@ -322,6 +322,9 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   for (const c of p.cast) {
     if (!c.leverage?.trim())
       err('no_leverage', `character ${c.id} holds no leverage — that is scenery, not a character`);
+    // A player must never meet a name they were not introduced to.
+    if (!c.intro?.trim())
+      err('no_intro', `character ${c.id} has no intro — the player would meet a name with no person attached`);
     for (const f of c.knows) if (!factIds.has(f)) err('bad_char_fact', `${c.id} knows unknown fact ${f}`);
   }
   if (!p.cast.some((c) => c.reliability === 'mistaken'))

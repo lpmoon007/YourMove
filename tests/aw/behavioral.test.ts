@@ -138,3 +138,35 @@ test('a topic hint matches whole words, not substrings', async () => {
     'a question about a car leaked the answer to a question about the room',
   );
 });
+
+test('a player never meets a name they were not introduced to', () => {
+  // Twice now the brief has referred to "Dez" before saying who Dez is. The rule: the
+  // pre-run brief describes people by their ROLE; the cast block introduces them by name.
+  const brief = [PKG.world.setup, PKG.world.trouble, PKG.world.player.pressure, PKG.world.player.you]
+    .join(' ')
+    .toLowerCase();
+
+  for (const c of PKG.cast) {
+    const first = c.name.split(' ')[0]!.toLowerCase();
+    assert.equal(
+      new RegExp(`\\b${first}\\b`).test(brief),
+      false,
+      `the brief names "${c.name}" before the cast block introduces them — describe them by role instead`,
+    );
+    assert.ok(c.intro.trim().length > 20, `${c.id} needs a real introduction, not a fragment`);
+  }
+});
+
+test('a character introduction gives away nothing the run is about', () => {
+  // The intro says who someone is to you. Whether they are honest, mistaken or lying is
+  // the entire game, and the player has to earn it.
+  const forbidden = /\b(lie|lies|lying|liar|deceptive|deceit|mistaken|honest|dishonest|untrustworthy|guilty|innocent|culprit|betray)\w*\b/i;
+  for (const c of PKG.cast) {
+    assert.equal(forbidden.test(c.intro), false, `${c.id}'s intro leaks their reliability: "${c.intro}"`);
+    assert.equal(
+      c.intro.toLowerCase().includes(c.motive.toLowerCase().slice(0, 25)),
+      false,
+      `${c.id}'s intro leaks their motive`,
+    );
+  }
+});

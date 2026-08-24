@@ -258,7 +258,13 @@ export class World {
       location: loc ? { id: loc.id, name: loc.name, description: loc.description } : null,
       present: this.presentActors().map((id) => {
         const c = this.character(id)!;
-        return { id, name: c.name, role: c.role, disposition_read: dispositionRead(st.dispositions[id] ?? {}) };
+        return {
+          id,
+          name: c.name,
+          role: c.role,
+          intro: c.intro,
+          disposition_read: dispositionRead(st.dispositions[id] ?? {}),
+        };
       }),
       resources: Object.entries(this.pkg.world.resources).map(([id, r]) => ({
         id,
