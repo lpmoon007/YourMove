@@ -64,13 +64,32 @@ function deps() {
   return { parser: modelParser(), narrator: modelNarrator() };
 }
 
+/**
+ * How You Play is downstream of the simulation, and downstream has to mean downstream: a
+ * failure writing evidence, a badge or a run's owner cannot be allowed to stop somebody
+ * playing. This is not hypothetical — a database missing the How You Play migration made
+ * every attempt to start a run fail at the front door, because bookkeeping threw and the
+ * run went with it.
+ *
+ * The failure is loud in the server log and invisible on the screen, which is the right
+ * way round: the profile is worth less than the game.
+ */
+async function withoutBreakingPlay(what: string, write: () => Promise<void>): Promise<void> {
+  try {
+    await write();
+  } catch (err) {
+    console.error(`Your Move: ${what} did not get written — play continued without it.`, err);
+  }
+}
+
 /** Item 3 — a package plus a seed becomes a world. V1A holds the seed fixed per the
  *  build order (seed variation is V1C); the parameter exists so V1C is a config change. */
 export async function startRun(seed = 'last-job-001'): Promise<RunView> {
   const runId = `ym_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
   const world = loadWorld(PKG, { run_id: runId, seed, now: () => new Date().toISOString() });
   await runStore().create(serializeWorld(world));
-  await runStore().claimRun(runId, await ensureDeviceId());
+  const me = await ensureDeviceId();
+  await withoutBreakingPlay('the owner of this run', () => runStore().claimRun(runId, me));
   return view(world);
 }
 
@@ -101,8 +120,8 @@ export async function submitAction(runId: string, text: string): Promise<RunView
   if (world.ended) {
     const me = await ensureDeviceId();
     const evidence = observePlay(world);
-    await runStore().savePlayEvidence(me, evidence);
-    await runStore().saveBadges(me, awardBadges(world, evidence));
+    await withoutBreakingPlay('play evidence', () => runStore().savePlayEvidence(me, evidence));
+    await withoutBreakingPlay('badges', () => runStore().saveBadges(me, awardBadges(world, evidence)));
   }
 
   return view(world, outcome);

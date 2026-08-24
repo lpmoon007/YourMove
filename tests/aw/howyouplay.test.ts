@@ -142,6 +142,25 @@ test('the simulation never reads the play layer (the architectural rule)', () =>
   }
 });
 
+test('a How You Play write can never stop somebody playing', () => {
+  // The architectural rule has a runtime half: the play layer is downstream, so a failure
+  // writing evidence, a badge or a run's owner must not reach the player. This shipped
+  // broken once — a database missing the How You Play migration made "Start the clock"
+  // fail at the front door, because bookkeeping threw and took the run with it.
+  const src = readFileSync('lib/yourmove/actions.ts', 'utf8');
+  const guarded = /withoutBreakingPlay\(/;
+  for (const call of ['claimRun', 'savePlayEvidence', 'saveBadges']) {
+    for (const line of src.split('\n')) {
+      if (!line.includes(`${call}(`) || line.trimStart().startsWith('*')) continue;
+      assert.match(line, guarded, `${call} is called unguarded — a failed write would break play: ${line.trim()}`);
+    }
+  }
+  // And the guard has to actually swallow, not rethrow.
+  assert.match(src, /async function withoutBreakingPlay[\s\S]*?catch \(err\)[\s\S]*?console\.error/);
+  const body = src.slice(src.indexOf('async function withoutBreakingPlay'));
+  assert.equal(/catch \(err\) \{[\s\S]*?throw/.test(body.slice(0, 500)), false, 'the guard rethrows');
+});
+
 test('evidence cites a real event, a real world, and what was typed', async () => {
   const w = await playedRun(TALKER);
   const ids = new Set(w.spine.all().map((e) => e.id));

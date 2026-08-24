@@ -89,6 +89,12 @@ engine reads them afterward.
 
     simulation runtime -> event spine -> observer -> profile
 
+A failed play write can never reach the player either: evidence, badges and a run's owner
+are written through `withoutBreakingPlay` in `lib/yourmove/actions.ts`, because a database
+missing this layer's migration once made "Start the clock" fail at the front door. The
+profile is worth less than the game. A test fails the build if any of those three writes
+is called unguarded.
+
 No module in `lib/aw` outside `play/` may import it. A play dimension can never reach a
 resolution. The scenario declares what its own verbs mean (`play_signals`), because only
 the world knows that pressing someone is force — but it declares it as data the runtime
