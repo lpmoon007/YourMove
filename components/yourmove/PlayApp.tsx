@@ -70,9 +70,12 @@ export function PlayApp({ initial }: { initial: RunView }) {
               {run.ended ? (
                 <div className="ym-ended">
                   <p>{run.ended.label}</p>
-                  {run.outcome ? <p className="ym-headline">{run.outcome.headline}</p> : null}
+                  <p className="ym-headline">
+                    Nothing is hidden from you any more. The next screen shows what was actually true, what you
+                    were told that was not, and what you never found out.
+                  </p>
                   <a className="ym-button" href={`/yourmove/${run.run_id}/debrief`}>
-                    What was actually true →
+                    See what was actually true →
                   </a>
                 </div>
               ) : null}

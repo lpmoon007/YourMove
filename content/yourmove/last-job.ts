@@ -27,6 +27,8 @@ export const LAST_JOB: ScenarioPackage = {
   content_version: '1.0.0',
 
   world: {
+    ending_out_of_time:
+      'The nineteen minutes are gone. Whatever you had worked out by now is what you leave with.',
     premise:
       'A hotel room being used as a safehouse, forty minutes after a robbery and nineteen minutes before ' +
       'the getaway van leaves without whoever is still arguing.',
@@ -208,7 +210,7 @@ export const LAST_JOB: ScenarioPackage = {
       role: 'the money',
       voice:
         'Precise, slightly bored, quotes numbers to make a point. Never says "I" when "we" will do the same damage.',
-      motive: 'Keep his ten points, keep his name out of every mouth in this room, and be on a train by one.',
+      motive: 'Keep his ten percent, keep his name out of every mouth in this room, and be on a train by one.',
       reliability: 'self_serving',
       competence: 0.65,
       start_location: 'room',
@@ -229,6 +231,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'leak_source',
       statement: 'The call that put a car on that corner came from {value}.',
+      question: 'who made the call',
       category: 'core',
       sensitivity: 'hidden',
       discoverable_via: ['p_leak_press', 'p_leak_marla_paid'],
@@ -236,7 +239,8 @@ export const LAST_JOB: ScenarioPackage = {
     },
     {
       id: 'who_was_out',
-      statement: 'Between the job and now, the one who left this room was {value}.',
+      statement: 'Between the robbery and now, the one who left this room was {value}.',
+      question: 'who left this room after the robbery',
       category: 'core',
       sensitivity: 'discoverable',
       discoverable_via: ['p_out_tablet', 'p_out_dez'],
@@ -245,6 +249,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'call_time',
       statement: 'The call went out at {value}.',
+      question: 'what time the call went out',
       category: 'core',
       sensitivity: 'discoverable',
       discoverable_via: ['p_time_ledger', 'p_time_cyrus'],
@@ -253,6 +258,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'sedan_truth',
       statement: 'The gray sedan on the corner is {value}.',
+      question: 'what the car on the corner actually was',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_sedan_window', 'p_sedan_marla'],
@@ -260,6 +266,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'camera_loop',
       statement: 'The eleventh-floor cameras have been {value} since ten.',
+      question: 'what the hotel cameras have been doing tonight',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_cam_marla', 'p_cam_tablet'],
@@ -267,6 +274,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'marla_debt',
       statement: 'Marla owes money to {value}.',
+      question: 'who your inside woman owes money to',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_debt_cyrus'],
@@ -274,20 +282,23 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'dez_court',
       statement: "Dez is due in court on {value}.",
+      question: 'why your driver is so frightened of being arrested',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_court_dez'],
     },
     {
       id: 'cyrus_skim',
-      statement: 'Cyrus has been taking {value} off the top for a year.',
+      statement: 'Cyrus has been quietly taking {value} of every job for a year.',
+      question: 'what the man holding the money has been doing with it',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_skim_marla'],
     },
     {
       id: 'buyer_window',
-      statement: "The fence stops answering at {value}.",
+      statement: 'The buyer for the stolen goods stops answering the phone at {value}.',
+      question: 'when the buyer stops answering the phone',
       category: 'supporting',
       sensitivity: 'discoverable',
       discoverable_via: ['p_window_cyrus'],
@@ -306,7 +317,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_leak_marla_paid',
       fact: 'leak_source',
-      description: 'Buy it from Marla. She saw the call go out and she has never given anything away free.',
+      description: 'Buy it from your inside woman. She saw the call go out and has never given anything away free.',
       via_verb: ['ask', 'press'],
       via_target: ['marla'],
       requires: { flag: 'marla_paid', eq: true },
@@ -316,7 +327,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_leak_marla_lie',
       fact: 'leak_source',
-      description: 'Ask Marla for free and get a name that costs her nothing.',
+      description: 'Ask your inside woman for free, and get a name that costs her nothing.',
       via_verb: ['ask'],
       via_target: ['marla'],
       requires: { not: { flag: 'marla_paid', eq: true } },
@@ -334,7 +345,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_out_tablet',
       fact: 'who_was_out',
-      description: "Scroll back the eleventh-floor camera on Marla's tablet.",
+      description: 'Scroll back the eleventh-floor camera on the night manager\'s tablet.',
       via_verb: ['search'],
       via_target: ['tablet'],
       disclosure: { status: 'observed', value: '@canonical', source: 'observation', confidence: 0.9 },
@@ -342,7 +353,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_out_dez',
       fact: 'who_was_out',
-      description: 'Ask Dez. He has been facing the door the whole time and he notices doors.',
+      description: 'Ask your driver who left. He has been facing that door all night and he notices doors.',
       via_verb: ['ask', 'press'],
       via_target: ['dez'],
       requires: { knows: { actor: 'dez', fact: 'who_was_out' } },
@@ -362,7 +373,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_time_cyrus',
       fact: 'call_time',
-      description: 'Ask Cyrus. He was on his own call and heard the other line pick up.',
+      description: 'Ask the man with the money. He was on his own call and heard a second line pick up.',
       via_verb: ['ask', 'press'],
       via_target: ['cyrus'],
       requires: { knows: { actor: 'cyrus', fact: 'call_time' } },
@@ -382,7 +393,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_sedan_dez',
       fact: 'sedan_truth',
-      description: 'Ask Dez about the car. He will tell you exactly what he believes, and he believes it hard.',
+      description: 'Ask your driver about the car. He will tell you exactly what he believes, and he believes it hard.',
       via_verb: ['ask', 'press'],
       via_target: ['dez'],
       requires: { knows: { actor: 'dez', fact: 'sedan_truth' } },
@@ -394,7 +405,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_sedan_marla',
       fact: 'sedan_truth',
-      description: 'Ask Marla, who watches that corner on four screens every night.',
+      description: 'Ask your inside woman. She watches that corner on four screens every night.',
       via_verb: ['ask'],
       via_target: ['marla'],
       requires: { knows: { actor: 'marla', fact: 'sedan_truth' } },
@@ -406,7 +417,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_cam_marla',
       fact: 'camera_loop',
-      description: 'Ask Marla what the cameras have been doing tonight.',
+      description: 'Ask your inside woman what the cameras have been doing tonight.',
       via_verb: ['ask', 'press'],
       via_target: ['marla'],
       requires: { knows: { actor: 'marla', fact: 'camera_loop' } },
@@ -426,7 +437,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_debt_cyrus',
       fact: 'marla_debt',
-      description: 'Cyrus knows who everybody owes. It is most of what he is for.',
+      description: 'Ask the man with the money who your inside woman owes. Knowing that is most of what he is for.',
       via_verb: ['ask', 'press'],
       via_target: ['cyrus'],
       requires: { knows: { actor: 'cyrus', fact: 'marla_debt' } },
@@ -436,7 +447,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_court_dez',
       fact: 'dez_court',
-      description: 'Dez will tell you about Thursday if you give him ten seconds.',
+      description: 'Ask your driver why he is this frightened. He will tell you if you give him ten seconds.',
       via_verb: ['ask', 'press'],
       via_target: ['dez'],
       requires: { knows: { actor: 'dez', fact: 'dez_court' } },
@@ -446,7 +457,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_skim_marla',
       fact: 'cyrus_skim',
-      description: 'Marla has been quietly counting what Cyrus counts.',
+      description: 'Ask your inside woman about the split. She has been quietly counting what he counts.',
       via_verb: ['ask', 'press'],
       via_target: ['marla'],
       requires: { knows: { actor: 'marla', fact: 'cyrus_skim' } },
@@ -456,7 +467,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       id: 'p_window_cyrus',
       fact: 'buyer_window',
-      description: 'Ask Cyrus when the fence stops picking up.',
+      description: 'Ask the man with the money when the buyer stops picking up.',
       via_verb: ['ask'],
       via_target: ['cyrus'],
       requires: { knows: { actor: 'cyrus', fact: 'buyer_window' } },
@@ -484,7 +495,7 @@ export const LAST_JOB: ScenarioPackage = {
       camera_loop: { value: 'looping the same ninety seconds' },
       marla_debt: { value: 'a man named Reyes' },
       dez_court: { value: 'Thursday' },
-      cyrus_skim: { value: 'ten points' },
+      cyrus_skim: { value: 'ten percent' },
       buyer_window: { value: 'midnight' },
     },
     bindings: { culprit: 'leak' },
@@ -617,6 +628,7 @@ export const LAST_JOB: ScenarioPackage = {
       label: 'Name them',
       aliases: ['accuse', 'name', 'call out', 'blame', 'it was'],
       description: 'Say out loud who did it. There is no taking this back.',
+      commitment_line: 'You said a name out loud in front of all three of them, and the night became whatever that name makes it.',
       default_minutes: 2,
       requires_target: true,
       speech: true,
@@ -629,6 +641,7 @@ export const LAST_JOB: ScenarioPackage = {
       label: 'Walk',
       aliases: ['leave', 'walk', 'go', 'take the bag', 'get out', 'bail'],
       description: 'Pick up the duffel and go. There is no taking this back either.',
+      commitment_line: 'You picked up the bag and walked, and left the question standing in the room behind you.',
       default_minutes: 1,
       commitment: true,
       base_difficulty: 0.1,
@@ -683,7 +696,9 @@ export const LAST_JOB: ScenarioPackage = {
         { kind: 'flag', id: 'public_room', value: 'named' },
         { kind: 'disposition', actor: '@target', axis: 'fear', delta: 40 },
       ],
-      reveals: [{ fact: 'leak_source', to: 'you', status: 'observed', via: 'p_leak_press' }],
+      // Deliberately reveals nothing. Naming someone is a commitment, not a discovery, and a
+      // player who guesses right without evidence should not be recorded as having worked it
+      // out. The truth axis scores knowing and saying separately.
       summary:
         'You say the name. Nobody argues, which is the loudest thing that has happened in this room all night.',
       effects_else: [
@@ -859,12 +874,13 @@ export const LAST_JOB: ScenarioPackage = {
     {
       key: 'take',
       label: 'The take',
+      question: 'How much of the forty thousand left the room with you.',
       min: 0,
       max: 3,
       scoring: [
-        { when: { resource: { id: 'cash', holder: 'you', gte: 38000 } }, points: 3, note: 'the duffel came out whole' },
-        { when: { resource: { id: 'cash', holder: 'you', gte: 20000, lt: 38000 } }, points: 2, note: 'you spent some of it getting out' },
-        { when: { resource: { id: 'cash', holder: 'you', lt: 20000 } }, points: 1, note: 'you bought your way out of this room' },
+        { when: { resource: { id: 'cash', holder: 'you', gte: 38000 } }, points: 3, note: 'all forty thousand came out of the room with you' },
+        { when: { resource: { id: 'cash', holder: 'you', gte: 20000, lt: 38000 } }, points: 2, note: 'you spent somewhere between two and twenty thousand of it buying your way through the room' },
+        { when: { resource: { id: 'cash', holder: 'you', lt: 20000 } }, points: 1, note: 'more than half the money went on getting out of the room' },
       ],
       bands: [
         { at_least: 3, label: 'whole' },
@@ -875,6 +891,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       key: 'crew',
       label: 'The crew',
+      question: 'Whether these three people would work with you again.',
       min: 0,
       max: 4,
       scoring: [
@@ -891,6 +908,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       key: 'heat',
       label: 'The heat',
+      question: 'How much attention tonight drew to you.',
       min: 0,
       max: 3,
       scoring: [
@@ -907,6 +925,7 @@ export const LAST_JOB: ScenarioPackage = {
     {
       key: 'truth',
       label: 'The truth',
+      question: 'Whether you worked out who made the call, and what you did about it.',
       min: -2,
       max: 4,
       scoring: [
@@ -965,7 +984,7 @@ export const LAST_JOB: ScenarioPackage = {
     'block.destroyed': 'What is left of {name} is not going to tell you anything.',
     'block.out_of_reach': '{name} is not within arm\'s reach, and crossing the room to get it is its own decision.',
     'block.sealed': '{name} does not open for you — not without making a noise about it.',
-    'block.no_target': 'Marla lifts an eyebrow. "{verb} who?"',
+    'block.no_target': 'Somebody in the room says it before you can. "{verb} who?"',
     'block.broke': 'The {resource} is not there to spend. You already know that; you counted it twice.',
     'block.short': 'You have {held} of the {resource}, not {wanted}, and everyone in this room can do arithmetic.',
     'block.cold': '{name} looks at you the way you look at weather. Whatever this is, it is going to cost you first.',

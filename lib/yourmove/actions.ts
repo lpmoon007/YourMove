@@ -42,9 +42,9 @@ export interface DebriefView {
   outcome: RunOutcome;
   reveal: Reveal;
   chains: CausalChain[];
-  director_share: number;
+  /** Things that happened tonight that the player did not set off. */
+  unprompted_events: number;
   seed: string;
-  content_version: string;
 }
 
 const PKG = LAST_JOB;
@@ -98,9 +98,8 @@ export async function debrief(runId: string): Promise<DebriefView | { error: str
     outcome: scoreOutcome(world),
     reveal: buildReveal(world),
     chains: causal.chains,
-    director_share: causal.director_share,
+    unprompted_events: causal.unprompted_events,
     seed: world.seed,
-    content_version: world.versions.content_version,
   };
 }
 

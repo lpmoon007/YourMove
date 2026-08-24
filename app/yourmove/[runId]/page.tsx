@@ -9,12 +9,13 @@ export default async function PlayPage({ params }: { params: Promise<{ runId: st
   if (!run) {
     return (
       <div className="ym-gate">
-        <h1>That run is gone</h1>
+        <h1>That night is over</h1>
         <p className="ym-tagline">
-          Runs live in memory until a database is configured, so a server restart ends them. Start a new one.
+          This run has expired and cannot be picked back up. The room is still there, though, and it starts the
+          same way every time.
         </p>
-        <a className="ym-button" href="/yourmove">
-          Start again →
+        <a className="ym-button" href="/">
+          Start a new one →
         </a>
       </div>
     );

@@ -165,7 +165,19 @@ body { -webkit-font-smoothing: antialiased; }
 .ym-right { color: #7fae7f; }
 .ym-wrong { color: var(--ym-hot); }
 .ym-missed { color: var(--ym-dim); }
-.ym-debrief h2 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ym-dim); margin: 28px 0 8px; }
+.ym-debrief h2 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ym-dim); margin: 32px 0 8px; }
+.ym-debrief h1 { margin: 6px 0 10px; }
+.ym-ending { font-size: 17px; line-height: 1.5; margin: 0 0 8px; }
+.ym-section-note { margin: 0 0 12px; font-size: 13px; color: var(--ym-dim); max-width: 66ch; }
+.ym-axis-q { margin: 6px 0 0; font-size: 12px; color: var(--ym-dim); }
+.ym-chain-time {
+  display: inline-block; min-width: 62px; color: var(--ym-dim);
+  font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+}
+.ym-chain > li { padding: 10px 0; border-bottom: 1px solid var(--ym-line); }
+.ym-chain > li > ul { list-style: none; margin: 6px 0 0; padding-left: 62px; }
+.ym-chain > li > ul li { padding: 2px 0; border: none; font-size: 13px; color: var(--ym-dim); }
+.ym-truth .ym-fact-tag { display: block; margin-top: 3px; }
 .ym-debrief ul { list-style: none; padding: 0; margin: 0; }
 
 /* --- console --- */

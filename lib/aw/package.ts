@@ -52,6 +52,11 @@ export interface FactDef {
   id: string;
   /** Player-facing phrasing. "{value}" is substituted with the known value. */
   statement: string;
+  /** The same fact as a thing you did not find out, with no value in it. Reads after
+   *  "You never found out …", e.g. "who Marla owes money to". Substituting the value
+   *  into `statement` when it is unknown produces "Marla owes money to something",
+   *  which reads like a bug. */
+  question: string;
   category: 'core' | 'supporting' | 'color';
   sensitivity: 'hidden' | 'discoverable' | 'public';
   /** Path ids. Part 4: anything a top outcome needs has at least two. */
@@ -129,6 +134,9 @@ export interface VerbDef {
   object_verb?: boolean;
   /** An irreversible commitment that closes options and can end the run (flow step 7). */
   commitment?: boolean;
+  /** The sentence shown when this verb ends the run. Required for a commitment verb:
+   *  "committed: accuse" is a state machine talking, not an ending. */
+  commitment_line?: string;
   /** Shown as a chip in the play interface when this predicate holds. Scaffolding only. */
   chip_when?: Pred;
   /** The verb is addressed to a person and can draw disclosure out of them. */
@@ -192,6 +200,9 @@ export interface WorldProcessDef {
 export interface OutcomeDimension {
   key: string;
   label: string;
+  /** What this axis is measuring, in the player's words. Shown under the label, because
+   *  a band on its own ("lighter", "noticed") means nothing to someone reading it once. */
+  question: string;
   /** Every dimension must be able to move independently (Part 4). */
   scoring: { when: Pred; points: number; note: string }[];
   min: number;
@@ -220,6 +231,8 @@ export interface ScenarioPackage {
   content_version: string;
   world: {
     premise: string;
+    /** What the player is told when the clock runs out. */
+    ending_out_of_time: string;
     /** What has ALREADY happened, stated plainly and with zero mystery: who you are with,
      *  what you did, where you are, what is in the room. The mystery in a world is what
      *  the player has to work out DURING it, never the situation they arrived in. */
@@ -334,6 +347,8 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
 
   // --- facts and discovery paths ---
   for (const f of p.facts) {
+    if (!f.question?.trim())
+      err('no_fact_question', `fact ${f.id} has no question form — the debrief would print "…was something"`);
     for (const d of f.discoverable_via) if (!pathIds.has(d)) err('bad_path_ref', `fact ${f.id} cites unknown path ${d}`);
     if (f.required_for_top_outcome) {
       const distinct = new Set(f.discoverable_via);
@@ -343,6 +358,11 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   }
   for (const d of p.discovery_paths) {
     if (!factIds.has(d.fact)) err('bad_path_fact', `path ${d.id} reveals unknown fact ${d.fact}`);
+    // Path descriptions are shown to the player in the debrief as "you could have …".
+    // A hint that contains the answer is not a hint.
+    const fixed = p.truth_template.facts[d.fact]?.value;
+    if (fixed && fixed.length > 3 && d.description.toLowerCase().includes(String(fixed).toLowerCase()))
+      err('hint_spoils', `path ${d.id} names the answer ("${fixed}") in the hint the player is shown`);
     for (const r of predRefs(d.requires))
       if (!factIds.has(r) && !knownActor(r) && !entIds.has(r) && !locIds.has(r))
         warn('path_ref', `path ${d.id} references unknown id ${r}`);
@@ -391,8 +411,15 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
 
   // --- outcomes ---
   if (p.outcome_dimensions.length < 2) err('single_axis', 'outcomes are multi-axis, not a score (item 24)');
-  for (const d of p.outcome_dimensions)
+  for (const d of p.outcome_dimensions) {
     if (!d.scoring.length) err('empty_dimension', `dimension ${d.key} can never move`);
+    if (!d.question?.trim()) err('no_dimension_question', `dimension ${d.key} does not say what it measures`);
+  }
+  if (!p.world.ending_out_of_time?.trim())
+    err('no_clock_ending', 'world.ending_out_of_time is required — running out of time needs a sentence');
+  for (const v of p.verbs)
+    if (v.commitment && !v.commitment_line?.trim())
+      err('no_commitment_line', `verb ${v.id} ends the run but has no ending sentence`);
 
   // --- content descriptors, written before the scenario (Part 4) ---
   const cd = p.content_descriptors;

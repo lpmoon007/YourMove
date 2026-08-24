@@ -286,9 +286,10 @@ export function checkEnd(world: World, intent: Intent | null, _cap: CapabilityVe
   if (world.ended) return world.ended;
 
   if (outOfTime(world)) {
-    world.ended = { reason: 'clock', label: 'time ran out', at_world_time: world.clock };
+    world.ended = { reason: 'clock', label: world.pkg.world.ending_out_of_time, at_world_time: world.clock };
   } else if (intent && world.pkg.verbs.find((v) => v.id === intent.verb)?.commitment) {
-    world.ended = { reason: 'commitment', label: `committed: ${intent.verb}`, at_world_time: world.clock };
+    const verb = world.pkg.verbs.find((v) => v.id === intent.verb)!;
+    world.ended = { reason: 'commitment', label: verb.commitment_line ?? verb.label, at_world_time: world.clock };
   } else if (world.store.read().flags['_hard_fail'] === true) {
     world.ended = { reason: 'hard_fail', label: String(world.store.read().flags['_hard_fail_label'] ?? 'it came apart'), at_world_time: world.clock };
   }
