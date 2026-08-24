@@ -28,9 +28,14 @@ export default async function Entry({ searchParams }: { searchParams: Promise<{ 
     <div className="ym-gate">
       <p className="ym-wordmark">Your Move</p>
       <h1>{LAST_JOB.title}</h1>
+      <p className="ym-genre">{LAST_JOB.genre}</p>
       <p className="ym-tagline">{LAST_JOB.tagline}</p>
 
       <div className="ym-brief">
+        <div className="ym-brief-row">
+          <h2>What has already happened</h2>
+          <p>{w.setup}</p>
+        </div>
         <div className="ym-brief-row">
           <h2>You are</h2>
           <p>
@@ -38,12 +43,8 @@ export default async function Entry({ searchParams }: { searchParams: Promise<{ 
           </p>
         </div>
         <div className="ym-brief-row">
-          <h2>Where</h2>
-          <p>{w.premise}</p>
-        </div>
-        <div className="ym-brief-row">
-          <h2>Right now</h2>
-          <p>{w.player.pressure}</p>
+          <h2>The trouble</h2>
+          <p>{w.trouble}</p>
         </div>
         <div className="ym-brief-row ym-brief-goal">
           <h2>What you want</h2>
@@ -68,7 +69,12 @@ export default async function Entry({ searchParams }: { searchParams: Promise<{ 
               One of them will lie to your face. You cannot tell which by how they behave.
             </li>
             <li>
-              <strong>Naming someone ends it.</strong> So does walking out. Everything else, you can come back from.
+              <strong>Naming someone ends it.</strong> So does walking out with the bag. Everything else, you can
+              come back from.
+            </li>
+            <li>
+              <strong>Nobody will tell you the right move.</strong> There is no hint system and no correct path. The
+              world just answers what you actually do.
             </li>
           </ul>
         </div>

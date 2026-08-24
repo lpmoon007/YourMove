@@ -22,13 +22,24 @@ export const LAST_JOB: ScenarioPackage = {
   title: 'The Last Job',
   tagline: 'Nineteen minutes. Three people. One of them called it in — probably.',
   format: 'F1',
+  genre: 'Crime — the hour after a robbery. One room, three suspects, a clock.',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 
   world: {
     premise:
-      'Room 1114 of the Meridian Hotel, forty minutes after the job went perfectly and nineteen minutes ' +
-      'before the van leaves without whoever is still arguing.',
+      'A hotel room being used as a safehouse, forty minutes after a robbery and nineteen minutes before ' +
+      'the getaway van leaves without whoever is still arguing.',
+    setup:
+      'Forty minutes ago you and three other people robbed the night safe of a jewellery wholesaler four ' +
+      'blocks from here. It went exactly to plan: nobody was hurt, nobody was caught, no alarm went off. ' +
+      'You are all now in Room 1114 of the Meridian Hotel, which Marla — the night manager, and one of the ' +
+      'four of you — arranged as the place to sit for an hour before splitting up. Forty thousand dollars ' +
+      'in cash is in a canvas duffel on the bed. A van is waiting downstairs to take you out of the city.',
+    trouble:
+      'Dez is certain there is an unmarked police car parked on the corner. If he is right, somebody made a ' +
+      'phone call from this building tonight, and it was one of the three people standing in front of you. ' +
+      'If he is wrong, you are about to destroy your own crew over a parked car — and the van leaves either way.',
     cold_open:
       "The money is on the bed in a canvas duffel and nobody has touched it in four minutes, which is how " +
       "you know something is wrong. Dez is at the window with two fingers in the blind. Marla is standing " +
@@ -40,15 +51,18 @@ export const LAST_JOB: ScenarioPackage = {
       role: 'the planner',
       start_location: 'room',
       you:
-        'You put this crew together. You picked the hotel, you picked the hour, and you told ' +
-        'everyone what the plan was. Forty minutes ago it worked perfectly. Whatever happens in ' +
-        'the next nineteen minutes is also yours.',
+        'A career criminal, and the one who planned this robbery. You chose the crew, the target, the ' +
+        'hotel and the hour, and forty minutes ago every part of that was right. You are not the muscle ' +
+        'and you are not the money — you are the person the other three look at when something stops ' +
+        'making sense, which is happening now.',
       objective:
-        'Get out of this room with the money and with a crew that still works — and if one of ' +
-        'them called the police, know which one before you decide who rides in the van.',
+        'Leave this room in the next nineteen minutes with the forty thousand, without the police, and ' +
+        'without having ruined three people you may need again. If one of them did make that call, find ' +
+        'out which one before you decide who gets in the van. If none of them did, do not talk yourself ' +
+        'into believing otherwise.',
       pressure:
-        'Dez says there has been a car on the corner since you got back, and he is close to ' +
-        'not waiting for you.',
+        'Dez has been watching that car through the blinds for four minutes and he is close to walking ' +
+        'down to the van without the rest of you.',
     },
     duration_minutes: 19,
     resources: {
@@ -915,7 +929,7 @@ export const LAST_JOB: ScenarioPackage = {
 
   content_descriptors: {
     depicted: [
-      'the aftermath of an armed robbery, with no violence shown',
+      'the aftermath of a robbery, with no violence shown on screen',
       'threat, coercion and bribery between adults',
       'implied police pressure',
       'debt and criminal obligation',

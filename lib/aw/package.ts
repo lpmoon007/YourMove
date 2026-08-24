@@ -213,10 +213,19 @@ export interface ScenarioPackage {
   title: string;
   tagline: string;
   format: 'F1' | 'F2' | 'F3';
+  /** Plain genre label, shown before anything else. A player deciding whether to press
+   *  Play should never have to infer what kind of thing this is. */
+  genre: string;
   schema_version: string;
   content_version: string;
   world: {
     premise: string;
+    /** What has ALREADY happened, stated plainly and with zero mystery: who you are with,
+     *  what you did, where you are, what is in the room. The mystery in a world is what
+     *  the player has to work out DURING it, never the situation they arrived in. */
+    setup: string;
+    /** The trouble. Why this is a scene and not an anecdote. */
+    trouble: string;
     cold_open: string;
     player: {
       id: string;
@@ -300,6 +309,9 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   if (!p.world.player.you?.trim()) err('no_player_identity', 'world.player.you is required — the player must know who they are');
   if (!p.world.player.objective?.trim()) err('no_objective', 'world.player.objective is required — the player must know what they want');
   if (!p.world.player.pressure?.trim()) err('no_pressure', 'world.player.pressure is required — the cold open needs one immediate pressure');
+  if (!p.genre?.trim()) err('no_genre', 'genre is required — a player should never have to guess what kind of thing this is');
+  if (!p.world.setup?.trim()) err('no_setup', 'world.setup is required — what already happened is stated plainly, never inferred');
+  if (!p.world.trouble?.trim()) err('no_trouble', 'world.trouble is required — say why this is a scene');
   for (const l of p.locations)
     for (const dest of Object.keys(l.travel_minutes))
       if (!locIds.has(dest)) err('bad_travel', `${l.id} → unknown location ${dest}`);

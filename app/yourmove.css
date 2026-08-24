@@ -132,6 +132,11 @@ body { -webkit-font-smoothing: antialiased; }
   margin: 0 0 18px; font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
   color: var(--ym-hot); font-family: ui-monospace, Menlo, monospace;
 }
+.ym-genre {
+  margin: 6px 0 0; font-size: 13px; color: var(--ym-cool);
+  font-family: ui-monospace, Menlo, monospace;
+}
+.ym-gate .ym-tagline { margin-top: 10px; }
 .ym-gate h1 { font-size: 34px; margin: 0 0 6px; }
 .ym-gate .ym-tagline { font-size: 16px; margin-bottom: 24px; }
 .ym-contract { border: 1px solid var(--ym-line); background: var(--ym-panel); padding: 16px; margin-bottom: 20px; }
