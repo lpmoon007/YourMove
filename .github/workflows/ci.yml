@@ -1,3 +1,9 @@
+# Your Move — CI.
+#
+# Two gates on every push: the app compiles, and the simulation harness passes. The
+# harness needs no database and no API key, because the engine core is pure — which is
+# what lets item 14 fail a build on a truth mutation or an invariant violation.
+
 name: CI
 
 on:
@@ -15,10 +21,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Simulation harness (behavioral · integrity · invariants · determinism · overlay)
+        run: npm run test:aw
       - name: Build (type-check + compile)
         run: npm run build
-        env:
-          # Public env is read at build; dummy values are fine — the build must not
-          # hit the network. Real values live in Vercel.
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: dummy-anon-key

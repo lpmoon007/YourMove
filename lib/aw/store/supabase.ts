@@ -1,10 +1,9 @@
 import 'server-only';
-// The Supabase run store. Its own project, its own keys, its own tables — nothing here
-// can reach The Signal's database, because it never holds its credentials.
+// The Supabase run store.
 //
-// Everything writes through the service role, because RLS in supabase-yourmove is
-// default-deny with no policies: a browser can read nothing, and canonical truth in
-// particular is unreachable from any client.
+// Everything writes through the service role, because RLS in the schema is default-deny
+// with no policies: a browser can read nothing, and canonical truth in particular is
+// unreachable from any client.
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 

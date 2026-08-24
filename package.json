@@ -1,19 +1,15 @@
 {
-  "name": "the-signal",
+  "name": "your-move",
   "version": "0.1.0",
   "private": true,
-  "description": "The Signal — participant experience (Vercel + Supabase). Phase 2: read path.",
+  "description": "Your Move — an experiential simulation on the Adaptive Worlds engine (Vercel + Supabase).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed:build": "node scripts/seed/build_seed.mjs",
-    "test:aw": "tsx --test tests/aw/*.test.ts",
-    "supabase:start": "supabase start",
-    "supabase:stop": "supabase stop",
-    "db:reset": "supabase db reset",
-    "db:push": "supabase db push"
+    "test": "tsx --test tests/aw/*.test.ts",
+    "test:aw": "tsx --test tests/aw/*.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.68.0",
@@ -26,6 +22,7 @@
     "@types/node": "^22.10.7",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
+    "playwright": "^1.62.1",
     "tsx": "^4.23.12",
     "typescript": "^5.7.3"
   }

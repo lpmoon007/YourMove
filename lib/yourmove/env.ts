@@ -1,6 +1,5 @@
-// Your Move's own environment. Deliberately separate names from The Signal's
-// (lib/env.ts) so the two products point at two different Supabase projects and nothing
-// here can reach that one by accident.
+// Environment access. Server-only secrets are read lazily, inside server-only modules,
+// so they can never reach the client bundle.
 
 /** Public — safe in the browser bundle. */
 export const YM_SUPABASE_URL =
@@ -8,7 +7,7 @@ export const YM_SUPABASE_URL =
 export const YM_SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_YOURMOVE_SUPABASE_ANON_KEY ?? process.env.YOURMOVE_SUPABASE_ANON_KEY ?? '';
 
-/** Server-only. Read lazily, never at module scope in a client-reachable file. */
+/** Server-only. The run store writes through it; RLS is default-deny for everyone else. */
 export function ymServiceRoleKey(): string {
   const k = process.env.YOURMOVE_SUPABASE_SERVICE_ROLE ?? '';
   if (!k) throw new Error('YOURMOVE_SUPABASE_SERVICE_ROLE is not set — the Your Move run store writes through it.');

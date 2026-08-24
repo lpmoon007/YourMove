@@ -43,8 +43,7 @@ export function PlayApp({ initial }: { initial: RunView }) {
   const urgent = remaining !== null && remaining <= 5;
 
   return (
-    <div className="ymui">
-      <div className="ym-shell">
+    <div className="ym-shell">
         <header className="ym-head">
           <div>
             <h1 className="ym-title">{run.title}</h1>
@@ -167,8 +166,7 @@ export function PlayApp({ initial }: { initial: RunView }) {
                 the prose is plainer.
               </p>
             ) : null}
-          </aside>
-        </div>
+        </aside>
       </div>
     </div>
   );
