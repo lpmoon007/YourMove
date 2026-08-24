@@ -1,0 +1,25 @@
+# Your Move — the V1A gate, run on every push.
+#
+# Item 14: the harness runs against every build from here forward, and the build FAILS on
+# any canonical-truth mutation or invariant violation. It needs no database and no API
+# key, which is the whole point of keeping the simulation core pure.
+
+name: Your Move — simulation harness
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Simulation test harness (behavioral + integrity + invariants + determinism)
+        run: npm run test:aw

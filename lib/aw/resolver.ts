@@ -1,0 +1,258 @@
+// ITEM 9 — the Outcome Resolver. What does an attempted action produce?
+//
+// Deterministic given seed and state. NO MODEL CALL ANYWHERE IN THIS FILE — this is the
+// single most important architectural constraint in the product (brief 9.2, stage 3).
+//
+// The DEFAULT path handles anything, including actions no author anticipated: capability
+// versus opposition versus modifiers, resolved by a seeded draw into an outcome class.
+// The OVERRIDE path exists for the handful of high-stakes beats where the designer must
+// control the result. Overrides are exceptions, not the mechanism (L5) — if a scenario
+// needs one per action, the scenario is written wrong.
+
+import type { DiscoveryPath, ResolutionOverride, ScenarioPackage } from './package';
+import { evalPred } from './predicate';
+import type { CapabilityVerdict, Effect, Intent, KnowledgeStatus, OutcomeClass, Resolution } from './types';
+import type { World } from './world';
+
+export function resolve(world: World, intent: Intent, cap: CapabilityVerdict): Resolution {
+  const override = matchOverride(world, intent);
+  return override ? resolveOverride(world, intent, cap, override) : resolveDefault(world, intent, cap);
+}
+
+// ---------------------------------------------------------------------------
+// the default path
+// ---------------------------------------------------------------------------
+
+function resolveDefault(world: World, intent: Intent, cap: CapabilityVerdict): Resolution {
+  const pkg = world.pkg;
+  const st = world.store.read();
+  const verb = pkg.verbs.find((v) => v.id === intent.verb);
+  const difficulty = pkg.difficulty[world.config.difficulty] ?? { opposition_multiplier: 1, cost_multiplier: 1 };
+
+  // --- actor capability: what the player brings to this attempt ------------
+  let capability = 0.5;
+  const target = intent.targets[0] ?? null;
+  if (target) {
+    // information held about the target's business makes the attempt land harder
+    const relevant = world.knowledge
+      .factsFor(world.playerId)
+      .filter(({ fact }) => pkg.facts.find((f) => f.id === fact)?.statement.includes('{value}') ?? true);
+    capability += Math.min(0.2, relevant.length * 0.04);
+    const trust = st.dispositions[target]?.trust ?? 0;
+    capability += (trust / 100) * 0.25;
+  }
+  const committed = cap.commits.reduce((n, c) => n + c.amount, 0);
+  const totalHeld = Object.values(st.resources).reduce((n, h) => n + (h[world.playerId] ?? 0), 0);
+  if (committed > 0 && totalHeld > 0) capability += Math.min(0.2, (committed / totalHeld) * 0.25);
+  if (intent.goal) capability += 0.03; // a stated purpose is a sharper attempt
+
+  // --- opposition: what pushes back ----------------------------------------
+  let opposition = 0.35 + (verb?.base_difficulty ?? 0.1);
+  if (target) {
+    const c = world.character(target);
+    if (c) {
+      opposition += c.competence * 0.2;
+      const fear = st.dispositions[target]?.fear ?? 0;
+      opposition += (fear / 100) * 0.15;
+      if (c.reliability === 'deceptive' || c.reliability === 'evasive') opposition += 0.12;
+    }
+  }
+  opposition *= difficulty.opposition_multiplier;
+
+  // --- situational modifiers ------------------------------------------------
+  const modifiers = -cap.uncertainty * 0.5 + (intent.secrecy === 'covert' ? -0.08 : 0);
+
+  // --- the seeded draw (L11) ------------------------------------------------
+  const draw = world.rng.draw(`resolve:${world.counters.turns + 1}`);
+  const margin = capability - opposition + modifiers + (draw - 0.5) * 0.5;
+
+  let outcome: OutcomeClass;
+  if (margin > 0.18) outcome = 'success';
+  else if (margin > -0.02) outcome = 'partial';
+  else outcome = 'failure';
+
+  // Backfire is EARNED by risk, never by novelty (item 9). It needs a bad margin AND a
+  // real risk factor: a covert move, a cold room, or an attempt made against the clock.
+  const risky =
+    intent.secrecy === 'covert' ||
+    cap.uncertainty >= 0.35 ||
+    (target ? (st.dispositions[target]?.trust ?? 0) < -30 : false);
+  if (margin < -0.3 && risky) outcome = 'backfire';
+
+  const effects: Effect[] = [{ kind: 'clock', minutes: cap.minutes }, ...cap.cost];
+
+  // resource commitments actually move
+  for (const c of cap.commits)
+    if (c.amount > 0) effects.push({ kind: 'resource', id: c.id, from: world.playerId, to: target ?? 'world', amount: c.amount });
+
+  // per-verb authored defaults for this outcome class (the constraint layer)
+  for (const e of verb?.effects_by_outcome?.[outcome] ?? []) effects.push(e);
+
+  // relationship movement — the ordinary social physics of the attempt
+  if (target && world.character(target)) {
+    const trustDelta = outcome === 'success' ? 6 : outcome === 'partial' ? 2 : outcome === 'failure' ? -3 : -12;
+    const fearDelta = outcome === 'backfire' ? 12 : intent.secrecy === 'covert' ? 4 : 0;
+    effects.push({ kind: 'disposition', actor: target, axis: 'trust', delta: trustDelta });
+    if (fearDelta) effects.push({ kind: 'disposition', actor: target, axis: 'fear', delta: fearDelta });
+  }
+
+  // Reveals become knowledge effects in item 10, where information propagation is decided.
+  const reveals = outcome === 'failure' || outcome === 'backfire' ? [] : discoveries(world, intent, outcome);
+
+  return {
+    outcome,
+    effects,
+    uncertainty: cap.uncertainty,
+    rule_path: `default:${intent.verb}`,
+    draw,
+    capability_score: round3(capability),
+    opposition_score: round3(opposition),
+    reveals,
+    summary: defaultSummary(world, intent, outcome, reveals.length),
+  };
+}
+
+/** Which authored discovery paths this action opens. Two independent paths per critical
+ *  fact is an authoring rule (Part 4); which one the player walked is recorded. */
+function discoveries(world: World, intent: Intent, outcome: OutcomeClass): Resolution['reveals'] {
+  const ctx = world.predContext();
+  const out: Resolution['reveals'] = [];
+  const target = intent.targets[0] ?? null;
+  const said = `${intent.raw} ${intent.goal ?? ''}`.toLowerCase();
+
+  for (const p of world.pkg.discovery_paths) {
+    if (p.via_verb && !p.via_verb.includes(intent.verb)) continue;
+    if (p.via_target && !(target && p.via_target.includes(target))) continue;
+    if (!p.via_verb && !p.via_target) continue; // override-only path
+    // A targeted question gets the answer; a vague one does not.
+    if (p.topic_hints?.length && !p.topic_hints.some((h) => said.includes(h.toLowerCase()))) continue;
+    if (!evalPred(p.requires, ctx)) continue;
+
+    const d = p.disclosure ?? { status: 'told' as KnowledgeStatus, value: '@holder_belief' };
+    const source = d.source ?? target ?? 'observation';
+    const value = resolveDisclosureValue(world, p, source);
+    if (value === null) continue; // the source does not actually hold it — nothing to give
+
+    // Re-hearing what you already believe teaches nothing. A CORRECTION, though, is
+    // exactly how a reversal lands: a second path may contradict a first (item 18).
+    const held = world.knowledge.get(world.playerId, p.fact);
+    if (held.status !== 'unknown' && held.value === value) continue;
+
+    out.push({
+      fact: p.fact,
+      to: world.playerId,
+      status: outcome === 'partial' ? downgrade(d.status) : d.status,
+      via: p.id,
+    });
+    // One act does not empty a person. Two things at once is already generous.
+    if (out.length >= 2) break;
+    // the concrete value/fidelity ride on the path; item 10 reads them back via `via`
+  }
+  return out;
+}
+
+export function resolveDisclosureValue(world: World, path: DiscoveryPath, source: string): string | null {
+  const d = path.disclosure ?? { status: 'told' as KnowledgeStatus, value: '@holder_belief' };
+  if (d.value === '@canonical') return world.truth.read(path.fact) ?? null;
+  if (d.value === '@holder_belief') {
+    const rec = world.knowledge.get(source, path.fact);
+    return rec.status === 'unknown' ? null : rec.value;
+  }
+  return world.truth.isBinding(d.value) ? (world.truth.bind(d.value) ?? d.value) : d.value;
+}
+
+const downgrade = (s: KnowledgeStatus): KnowledgeStatus => (s === 'observed' ? 'told' : s);
+
+// ---------------------------------------------------------------------------
+// the override path
+// ---------------------------------------------------------------------------
+
+function matchOverride(world: World, intent: Intent): ResolutionOverride | null {
+  const ctx = world.predContext();
+  const target = intent.targets[0] ?? null;
+  const matches = world.pkg.overrides.filter((o) => {
+    if (o.when.verb && !o.when.verb.includes(intent.verb)) return false;
+    if (o.when.target && !(target && o.when.target.includes(target))) return false;
+    return evalPred(o.when.pred, ctx);
+  });
+  if (!matches.length) return null;
+  return matches.sort((a, b) => b.priority - a.priority)[0]!;
+}
+
+function resolveOverride(
+  world: World,
+  intent: Intent,
+  cap: CapabilityVerdict,
+  o: ResolutionOverride,
+): Resolution {
+  const target = intent.targets[0] ?? null;
+  let outcome: OutcomeClass;
+  let matched = true;
+
+  if (o.outcome === 'from_truth') {
+    const tm = o.truth_match!;
+    const canonical = world.truth.read(tm.fact);
+    matched = tm.target_equals_value ? canonical === target : canonical === tm.equals;
+    outcome = matched ? 'success' : 'failure';
+  } else {
+    outcome = o.outcome;
+  }
+
+  // A player who names a figure overrides the authored default for that resource; an
+  // authored transfer stands when they only said "offer her money".
+  const committedIds = new Set(cap.commits.filter((c) => c.amount > 0).map((c) => c.id));
+  const authored = (matched ? o.effects : (o.effects_else ?? [])).filter(
+    (e) => !(e.kind === 'resource' && committedIds.has(e.id)),
+  );
+  const effects: Effect[] = [{ kind: 'clock', minutes: cap.minutes }, ...cap.cost, ...authored];
+  for (const c of cap.commits)
+    if (c.amount > 0) effects.push({ kind: 'resource', id: c.id, from: world.playerId, to: target ?? 'world', amount: c.amount });
+
+  const draw = world.rng.draw(`override:${o.id}:${world.counters.turns + 1}`);
+
+  return {
+    outcome,
+    effects,
+    uncertainty: cap.uncertainty,
+    rule_path: `override:${o.id}${o.outcome === 'from_truth' ? (matched ? ':matched' : ':unmatched') : ''}`,
+    draw,
+    capability_score: 1,
+    opposition_score: 0,
+    reveals: (o.reveals ?? []).map((r) => ({ ...r })),
+    summary: (matched ? o.summary : (o.summary_else ?? o.summary)),
+  };
+}
+
+// ---------------------------------------------------------------------------
+
+function defaultSummary(world: World, intent: Intent, outcome: OutcomeClass, revealed: number): string {
+  const t = intent.targets[0] ? world.displayName(intent.targets[0]!) : 'the room';
+  const person = Boolean(intent.targets[0] && world.character(intent.targets[0]!));
+  switch (outcome) {
+    case 'success':
+      return revealed
+        ? person
+          ? `${t} gives you something.`
+          : `You get what you were after.`
+        : person
+          ? `${t} takes the point, and something in the room settles.`
+          : 'It goes the way you wanted it to.';
+    case 'partial':
+      return person
+        ? `${t} gives you part of it and keeps the rest where you can see them holding it.`
+        : 'You get some of it. Not the part you wanted most.';
+    case 'failure':
+      return person ? `${t} does not give you that.` : 'Nothing comes of it, and the minute is gone anyway.';
+    case 'backfire':
+      return person
+        ? `${t} reacts the way you were afraid they would, and now the room has heard it.`
+        : 'It goes wrong in a way you will be paying for shortly.';
+  }
+}
+
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+
+/** Exposed for the harness: how many overrides a package leans on (L5 health check). */
+export function overrideLoad(pkg: ScenarioPackage): { overrides: number; verbs: number; ratio: number } {
+  return { overrides: pkg.overrides.length, verbs: pkg.verbs.length, ratio: pkg.overrides.length / Math.max(1, pkg.verbs.length) };
+}
