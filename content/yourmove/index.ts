@@ -12,9 +12,10 @@
 import type { ScenarioPackage } from '@/lib/aw/package';
 import { LAST_JOB } from './last-job';
 import { LATE_EDITION } from './late-edition';
+import { FOUR_MINUTES } from './four-minutes';
 
 /** Every world a player can enter, in the order they are offered. */
-export const WORLDS: ScenarioPackage[] = [LAST_JOB, LATE_EDITION];
+export const WORLDS: ScenarioPackage[] = [LAST_JOB, LATE_EDITION, FOUR_MINUTES];
 
 /** Where a player lands when they have not asked for anything in particular. */
 export const DEFAULT_WORLD: ScenarioPackage = WORLDS[0]!;
@@ -33,4 +34,4 @@ export function worldById(id: string): ScenarioPackage | null {
   return WORLDS.find((w) => w.id === id) ?? null;
 }
 
-export { LAST_JOB, LATE_EDITION };
+export { LAST_JOB, LATE_EDITION, FOUR_MINUTES };

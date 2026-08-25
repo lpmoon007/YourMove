@@ -261,6 +261,31 @@ export interface ScenarioPackage {
      *  "left before the van goes", "until the presses start". Required for the same
      *  reason the rest of this is: a label written for one world is wrong in the next. */
     clock_label: string;
+    /**
+     * The 90-second version of this world: one moment, and three moves somebody can make
+     * on it without signing up for anything.
+     *
+     * This is not a demo of the world, it is the FIRST TURN of it. Whichever move gets
+     * picked is played here, by the engine, against this world's real rules — which is
+     * why the moves live in the package beside the verbs they use rather than being
+     * written separately somewhere they can drift out of date.
+     *
+     * The previews are deliberately confident about what will happen. The world never is.
+     * That gap is the point of the handover, not a flaw in it.
+     */
+    opening?: {
+      /** The moment, told to somebody who knows nothing at all about this world. */
+      prompt: string;
+      choices: {
+        id: string;
+        /** What the button says. */
+        label: string;
+        /** What picking it looks like it will do. */
+        preview: string;
+        /** What is actually typed into the world as turn one. */
+        move: string;
+      }[];
+    };
     /** What a player has to know about how THIS world behaves that they could not guess:
      *  who can be trusted, what ends the run, what the clock means here. Required, and
      *  worded as "Something short. The rest of it." — the first sentence is bolded. */
@@ -465,6 +490,24 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
       err('example_names_nothing', `example action "${ex}" names nobody and nothing in this world`);
   if (!p.world.cast_note?.trim())
     err('no_cast_note', 'world.cast_note is required — the player needs to know who else is coming');
+  // The opening is a promise made on the front of the house. Every part of it has to be
+  // playable here, or "enter the full world" lands somebody somewhere that does not exist.
+  if (p.world.opening) {
+    const o = p.world.opening;
+    if (!o.prompt?.trim()) err('no_opening_prompt', 'world.opening has no moment to show');
+    if (o.choices.length < 2) err('thin_opening', 'world.opening needs at least two moves to choose between');
+    const seen = new Set<string>();
+    for (const c of o.choices) {
+      if (seen.has(c.id)) err('duplicate_opening_choice', `world.opening has two choices called ${c.id}`);
+      seen.add(c.id);
+      for (const [field, value] of [['label', c.label], ['preview', c.preview], ['move', c.move]] as [string, string][])
+        if (!value?.trim()) err('empty_opening_choice', `opening choice ${c.id} has no ${field}`);
+      // The move is typed into this world, so it has to be about this world.
+      if (c.move && !namesSomethingReal(p, c.move))
+        err('opening_move_names_nothing', `opening choice ${c.id} plays "${c.move}", which names nobody and nothing here`);
+    }
+  }
+
   if (p.world.duration_minutes !== null && !p.world.clock_label?.trim())
     err('no_clock_label', 'world.clock_label is required — the number on the clock has to say what it is counting down to');
   if ((p.world.house_rules ?? []).length < 2)

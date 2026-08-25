@@ -85,13 +85,29 @@ async function withoutBreakingPlay(what: string, write: () => Promise<void>): Pr
 
 /** Item 3 — a package plus a seed becomes a world. V1A holds the seed fixed per the
  *  build order (seed variation is V1C); the parameter exists so V1C is a config change. */
-export async function startRun(worldSlug?: string, seed?: string): Promise<RunView> {
+export async function startRun(worldSlug?: string, seed?: string, openingId?: string): Promise<RunView> {
   const pkg = worldBySlug(worldSlug) ?? DEFAULT_WORLD;
   const runId = `ym_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
   const world = loadWorld(pkg, { run_id: runId, seed: seed?.trim() || defaultSeed(pkg.slug), now: () => new Date().toISOString() });
   await runStore().create(serializeWorld(world), pkg);
   const me = await ensureDeviceId();
   await withoutBreakingPlay('the owner of this run', () => runStore().claimRun(runId, me));
+
+  // Somebody who already made a move out on the front of the house arrives having made
+  // it. It is played here, by the engine, against the real rules — not replayed from the
+  // sentence the taster promised them. That difference is the whole point of the door.
+  const opening = pkg.world.opening?.choices.find((c) => c.id === openingId);
+  if (opening) {
+    const turn = await takeTurn(world, opening.move, deps());
+    const outcome = world.ended ? scoreOutcome(world) : null;
+    await runStore().save(
+      serializeWorld(world),
+      { adjudication: turn.adjudication, narration: turn.narration },
+      outcome,
+    );
+    return view(world, outcome);
+  }
+
   return view(world);
 }
 

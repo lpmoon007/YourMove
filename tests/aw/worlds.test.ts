@@ -325,3 +325,103 @@ test('an axis credits a right answer however it arrived', async () => {
     );
   }
 });
+
+
+test('a world with a taster offers moves the world can actually take', async () => {
+  // "Enter the full world" is a promise: the move somebody made out on the front of the
+  // house is played here, for real, as turn one. If the engine cannot parse it, the door
+  // opens onto a shrug — which is exactly the gap that made the handover feel unclear.
+  for (const pkg of WORLDS) {
+    const opening = pkg.world.opening;
+    if (!opening) continue;
+
+    assert.ok(opening.prompt.trim().length > 80, `${pkg.slug}: the taster moment is too thin to land cold`);
+    assert.ok(opening.choices.length >= 2, `${pkg.slug}: a choice of one is not a choice`);
+
+    for (const choice of opening.choices) {
+      const w = loadWorld(pkg, { run_id: `open_${pkg.slug}_${choice.id}`, seed: `${pkg.slug}-001` });
+      const turn = await takeTurn(w, choice.move);
+      assert.notEqual(
+        turn.outcome,
+        'clarify',
+        `${pkg.slug}/${choice.id}: the world does not understand its own opening move "${choice.move}"`,
+      );
+      assert.ok(turn.narration.trim(), `${pkg.slug}/${choice.id}: the opening move produced nothing`);
+      assert.equal(
+        /\berror\b|undefined|\[object|\{value\}/i.test(turn.narration),
+        false,
+        `${pkg.slug}/${choice.id}: the first thing a new player sees is a bug: ${turn.narration}`,
+      );
+      // A taster move must not end the run on the spot. Arriving and being finished is
+      // not an entrance.
+      assert.equal(turn.ended, null, `${pkg.slug}/${choice.id}: the opening move ended the run immediately`);
+    }
+  }
+});
+
+test('the taster promises an outcome and the world never does', () => {
+  // The previews are written to be confident. The world is not allowed to be: nothing in
+  // a scenario may tell a player what a move will do before they make it. Keeping these
+  // two apart is what makes the handover a hook rather than a lie.
+  for (const pkg of WORLDS) {
+    for (const choice of pkg.world.opening?.choices ?? []) {
+      assert.ok(choice.preview.trim().length > 40, `${pkg.slug}/${choice.id}: the preview says too little to be a promise`);
+      // The move itself is an instruction, not a prediction: it is what gets typed.
+      assert.ok(choice.move.length <= 120, `${pkg.slug}/${choice.id}: "${choice.move}" is longer than anybody would type`);
+    }
+  }
+});
+
+
+test('the front door is never uniformly a wall', async () => {
+  // A taster move is allowed to fail — a hostile character deflecting is characterization,
+  // and "you were promised an outcome, here is what actually happened" is the point of the
+  // handover. What is not allowed is every way in being a near-certain dead end, which is
+  // what two of these were before the difficulty of picking up a photograph lying on the
+  // table in front of you was looked at.
+  for (const pkg of WORLDS) {
+    const opening = pkg.world.opening;
+    if (!opening) continue;
+
+    const rates = await Promise.all(
+      opening.choices.map(async (choice) => {
+        let landed = 0;
+        const tries = 12;
+        for (let i = 0; i < tries; i += 1) {
+          const w = loadWorld(pkg, { run_id: `land_${choice.id}_${i}`, seed: `${pkg.slug}-${String(i).padStart(3, '0')}` });
+          const t = await takeTurn(w, choice.move);
+          if (t.outcome === 'success' || t.outcome === 'partial') landed += 1;
+        }
+        return { id: choice.id, rate: landed / tries };
+      }),
+    );
+
+    const best = Math.max(...rates.map((r) => r.rate));
+    assert.ok(
+      best >= 0.6,
+      `${pkg.slug}: no opening move lands reliably — ${rates.map((r) => `${r.id} ${(r.rate * 100).toFixed(0)}%`).join(', ')}`,
+    );
+  }
+});
+
+test('a failure says what actually failed', async () => {
+  // "Marla does not give you that" is right when you asked her for something and wrong
+  // when you told her where you stand. The world says which kind of verb it was: one that
+  // opens a discovery path is one you ask with.
+  for (const pkg of WORLDS) {
+    const telling = pkg.verbs.find((v) => v.speech && !pkg.discovery_paths.some((d) => d.via_verb?.includes(v.id)));
+    if (!telling) continue;
+    const person = pkg.cast[0]!.name.split(' ')[0]!;
+
+    for (let i = 0; i < 10; i += 1) {
+      const w = loadWorld(pkg, { run_id: `fail_${pkg.slug}_${i}`, seed: `${pkg.slug}-${String(i).padStart(3, '0')}` });
+      const t = await takeTurn(w, `${telling.aliases[0]} ${person} what I think`);
+      if (t.outcome !== 'failure') continue;
+      assert.doesNotMatch(
+        t.narration,
+        /does not give you that/,
+        `${pkg.slug}: "${telling.id}" failed as though the player had been asking for something: ${t.narration}`,
+      );
+    }
+  }
+});

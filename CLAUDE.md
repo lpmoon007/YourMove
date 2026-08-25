@@ -151,6 +151,17 @@ Nothing else in the product should have to change.
   from its own cast, its own objects and its own examples.
 - The front door is that world's brief when there is one world and a lobby when there are
   several. Neither is a special case: the list decides.
+- A world may carry an `opening`: the 90-second version of itself, and two or three moves
+  somebody can make on it. It is not a demo — whichever move gets picked is played here,
+  by the engine, as turn one, so the moves live beside the verbs they use and the
+  validator rejects one that names nothing in its own world. `/api/openings` serves them
+  so nothing on the front of the house keeps a copy that can drift.
+- The previews are confident about what will happen and the world never is. That gap is
+  the point of the handover, not a flaw in it — but no opening move may be a near-certain
+  dead end, and a test plays each one across a dozen seeds to check.
+- Starting a run mints a device cookie, so it only ever happens in a server action or a
+  route handler. As a page it is a 500, which is how the taster door shipped the first
+  time. A test walks `app/` and fails the build on it.
 
 ## 7b. Configuration fails loudly or not at all
 

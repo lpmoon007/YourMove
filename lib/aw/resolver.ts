@@ -338,12 +338,24 @@ function defaultSummary(
         ? `${t} gives you part of it and keeps the rest where you can see them holding it.`
         : 'You get some of it. Not the part you wanted most.';
     case 'failure':
-      return person ? `${t} does not give you that.` : 'Nothing comes of it, and the minute is gone anyway.';
+      if (!person) return 'Nothing comes of it, and the minute is gone anyway.';
+      // "They do not give you that" only makes sense if you were asking for something. A
+      // player who told somebody where they stand was not asking, and the world saying
+      // they withheld an answer reads as a bug in a conversation.
+      return seeking(world, intent)
+        ? `${t} does not give you that.`
+        : `${t} takes it, and nothing in the room moves the way you wanted it to.`;
     case 'backfire':
       return person
         ? `${t} reacts the way you were afraid they would, and now the room has heard it.`
         : 'It goes wrong in a way you will be paying for shortly.';
   }
+}
+
+/** Was this verb one that draws something out of somebody? The world says so itself: a
+ *  verb that opens a discovery path is a verb you ask with. */
+function seeking(world: World, intent: Intent): boolean {
+  return world.pkg.discovery_paths.some((p) => p.via_verb?.includes(intent.verb));
 }
 
 const round3 = (n: number) => Math.round(n * 1000) / 1000;

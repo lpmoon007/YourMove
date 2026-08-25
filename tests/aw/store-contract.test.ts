@@ -9,7 +9,8 @@
 // So the shape the schema demands is asserted here, against the packages themselves.
 
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { WORLDS } from '@/content/yourmove';
@@ -65,4 +66,35 @@ test('the store is handed the package rather than looking one up', () => {
   const src = readFileSync('lib/aw/store/supabase.ts', 'utf8');
   assert.equal(/from '@\/content\//.test(src), false, 'the store reaches into the worlds directory');
   assert.match(src, /async create\(snapshot, pkg\)/, 'create() no longer receives the package');
+});
+
+
+test('starting a run never happens while a page is rendering', () => {
+  // Starting a run mints this browser's device id, and Next.js refuses to write a cookie
+  // during a page render. It has bitten twice: once on /how-you-play, and once on the one
+  // link the whole taster handover depends on, which was a 500 until it was walked.
+  //
+  // So: every call site is either inside a server action or in a route handler.
+  const offenders: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!/\.tsx?$/.test(full)) continue;
+      const src = readFileSync(full, 'utf8');
+      if (!/\bstartRun\(/.test(src)) continue;
+      const isRouteHandler = /(^|\/)route\.tsx?$/.test(full);
+      const hasServerAction = src.includes("'use server'");
+      if (!isRouteHandler && !hasServerAction) offenders.push(full);
+    }
+  };
+  walk('app');
+  assert.deepEqual(
+    offenders,
+    [],
+    `these start a run during a page render, which cannot set a cookie:\n  ${offenders.join('\n  ')}`,
+  );
 });

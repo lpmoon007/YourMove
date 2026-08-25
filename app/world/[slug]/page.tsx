@@ -12,14 +12,19 @@ export default async function WorldPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ seed?: string }>;
+  searchParams: Promise<{ seed?: string; opening?: string }>;
 }) {
   const { slug } = await params;
   const pkg = worldBySlug(slug);
   if (!pkg) notFound();
 
-  const { seed } = await searchParams;
+  const { seed, opening } = await searchParams;
   const chosen = seed?.trim() || `${pkg.slug}-001`;
+
+  // Arriving with a move already made: the taster on the front of the house sent them,
+  // and the first turn is played the moment the run starts.
+  const carried = pkg.world.opening?.choices.find((c) => c.id === opening);
+  if (carried) redirect(`/world/${pkg.slug}/begin?opening=${encodeURIComponent(carried.id)}&seed=${encodeURIComponent(chosen)}`);
 
   async function begin() {
     'use server';
