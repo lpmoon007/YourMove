@@ -142,6 +142,15 @@ Nothing else in the product should have to change.
   because that is what a brief copied from another world looks like. The clock label was
   the one that got away — "left before the van goes" was hardcoded in a component and
   read as nonsense the moment a second world had a clock.
+- Nothing moves the player between locations, and the parser only offers what is in the
+  one they are standing in. A discovery path through an object stowed somewhere else is
+  not a path — the player is told "look at what?" as though they typed nonsense — so the
+  validator refuses one, and a world with two locations should keep everything that
+  matters in the one the player starts in.
+- A `from_truth` override records its matched branch as a successful turn and the other as
+  a failed one. When the matched branch is the bad ending, a triumphant paragraph gets
+  filed as a failure. Use two overrides told apart by a `truth` predicate instead, each
+  with its own explicit outcome.
 - Score the deciding fact on the value being RIGHT (`knows: { correct: true }`), never on
   how firmly it is held. A disclosure authored as first-hand is downgraded to hearsay when
   the turn it arrives on only partly succeeds, so scoring on status told a player "you

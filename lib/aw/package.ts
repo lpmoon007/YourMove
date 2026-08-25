@@ -420,6 +420,18 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   }
   for (const d of p.discovery_paths) {
     if (!factIds.has(d.fact)) err('bad_path_fact', `path ${d.id} reveals unknown fact ${d.fact}`);
+    // A path through a thing the player cannot get to is not a path. Nothing moves the
+    // player between locations — the parser will not even offer them the name — so a fact
+    // that counts on an object stowed somewhere else has one route fewer than it claims,
+    // and the player is told "look at what?" as though they had typed nonsense.
+    for (const t of d.via_target ?? []) {
+      const ent = p.entities.find((e) => e.id === t);
+      if (ent && ent.location !== p.world.player.start_location)
+        err(
+          'path_out_of_reach',
+          `path ${d.id} goes through ${ent.id}, which is in ${ent.location} while the player is in ${p.world.player.start_location} — nothing can carry them there`,
+        );
+    }
     // Path descriptions are shown to the player in the debrief as "you could have …".
     // A hint that contains the answer is not a hint.
     const fixed = p.truth_template.facts[d.fact]?.value;

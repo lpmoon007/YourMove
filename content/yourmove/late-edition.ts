@@ -755,12 +755,14 @@ export const LATE_EDITION: ScenarioPackage = {
         'You put the March letterhead and the lobby payphone on the desk side by side and let the sentence finish itself. Nobody in the room says the next thing quickly enough, and in the pause the answer arrives on its own.',
     },
     {
-      id: 'o_run',
-      priority: 100,
-      when: { verb: ['run'] },
-      outcome: 'from_truth',
-      truth_match: { fact: 'memo_origin', equals: 'nowhere — somebody typed it tonight' },
-      // MATCHED means the memo was made up and you printed it anyway.
+      // Two of these rather than one from_truth branch, because a from_truth override
+      // records its matched branch as a successful turn and the other as a failed one —
+      // and here the matched branch is printing a forgery. A page going to press is a
+      // page going to press; whether it should have is the debrief's business.
+      id: 'o_run_forgery',
+      priority: 110,
+      when: { verb: ['run'], pred: { truth: { fact: 'memo_origin', eq: 'nowhere — somebody typed it tonight' } } },
+      outcome: 'success',
       effects: [
         { kind: 'flag', id: 'printed', value: true },
         { kind: 'flag', id: 'printed_forgery', value: true },
@@ -768,12 +770,21 @@ export const LATE_EDITION: ScenarioPackage = {
       ],
       summary:
         'The page goes. Somewhere in the next four hours a hundred and forty thousand copies of a document that nobody ever wrote come off a press with your paper\'s name across the top of them.',
-      effects_else: [
+      play_signals: [
+        { dimension: 'caution_boldness', direction: 0.8, strength: 0.9, context: 'You printed it.' },
+      ],
+    },
+    {
+      id: 'o_run',
+      priority: 100,
+      when: { verb: ['run'] },
+      outcome: 'success',
+      effects: [
         { kind: 'flag', id: 'printed', value: true },
         { kind: 'flag', id: 'printed_true', value: true },
         { kind: 'flag', id: 'page_status', value: 'gone' },
       ],
-      summary_else:
+      summary:
         'The page goes. Whatever else is true about tonight, the thing on the front of it happened, and by six in the morning it will have happened in public.',
       play_signals: [
         { dimension: 'caution_boldness', direction: 0.8, strength: 0.9, context: 'You printed it.' },
