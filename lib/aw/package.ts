@@ -250,6 +250,17 @@ export interface ScenarioPackage {
     /** The trouble. Why this is a scene and not an anecdote. */
     trouble: string;
     cold_open: string;
+    /** What a player could type here, in this world, with these people. Shown on the
+     *  brief as the example of how to talk to the game. Required, because the examples
+     *  name this world's cast and objects — a generic example teaches nothing, and a
+     *  borrowed one names people who are not in the room. */
+    example_actions: string[];
+    /** One line under the cast, about who is and is not in this world. */
+    cast_note: string;
+    /** What a player has to know about how THIS world behaves that they could not guess:
+     *  who can be trusted, what ends the run, what the clock means here. Required, and
+     *  worded as "Something short. The rest of it." — the first sentence is bolded. */
+    house_rules: string[];
     player: {
       id: string;
       name: string;
@@ -439,6 +450,19 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   }
   if (!p.world.ending_out_of_time?.trim())
     err('no_clock_ending', 'world.ending_out_of_time is required — running out of time needs a sentence');
+
+  // The brief is one screen shared by every world, so everything on it that is specific
+  // to a world has to come from the world. A second world that forgot these would show
+  // the first world's cast to somebody who has never met them.
+  if ((p.world.example_actions ?? []).length < 2)
+    err('no_examples', 'world.example_actions needs at least two things a player could type here');
+  for (const ex of p.world.example_actions ?? [])
+    if (!namesSomethingReal(p, ex))
+      err('example_names_nothing', `example action "${ex}" names nobody and nothing in this world`);
+  if (!p.world.cast_note?.trim())
+    err('no_cast_note', 'world.cast_note is required — the player needs to know who else is coming');
+  if ((p.world.house_rules ?? []).length < 2)
+    err('no_house_rules', 'world.house_rules needs at least two — what ends a run here, and who can be trusted');
   for (const v of p.verbs) {
     if (v.commitment && !v.commitment_line?.trim())
       err('no_commitment_line', `verb ${v.id} ends the run but has no ending sentence`);
@@ -484,5 +508,33 @@ export function comparable(a: RunVersions, b: RunVersions): boolean {
     a.schema_version === b.schema_version &&
     a.content_version === b.content_version &&
     a.engine_ruleset_version === b.engine_ruleset_version
+  );
+}
+
+/**
+ * Does this sentence name anybody or anything that exists in this world?
+ *
+ * The point is to catch a world whose brief was copied from another one: an example
+ * action naming a cast member who is not in the room teaches the player a name for
+ * somebody they will never meet.
+ */
+function namesSomethingReal(p: ScenarioPackage, sentence: string): boolean {
+  const said = new Set(
+    sentence
+      .toLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter(Boolean),
+  );
+  const names = [
+    ...p.cast.flatMap((c) => [c.name, c.id]),
+    ...p.entities.flatMap((e) => [e.name, e.id]),
+    ...p.locations.flatMap((l) => [l.name, l.id]),
+  ];
+  return names.some((n) =>
+    n
+      .toLowerCase()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter((w) => w.length > 2)
+      .some((w) => said.has(w)),
   );
 }

@@ -4,7 +4,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { LAST_JOB } from '@/content/yourmove/last-job';
+import { DEFAULT_WORLD, worldById, worldBySlug } from '@/content/yourmove';
 import {
   causalDebrief,
   buildReveal,
@@ -28,6 +28,8 @@ import { buildTranscript, type TranscriptEntry } from '@/lib/yourmove/transcript
 
 export interface RunView {
   run_id: string;
+  /** Which world this run is in. Every screen after this one needs it. */
+  world: string;
   title: string;
   tagline: string;
   ui: UiProjection;
@@ -46,6 +48,7 @@ export interface HowYouPlayView {
 
 export interface DebriefView {
   run_id: string;
+  world: string;
   title: string;
   /** How this one run read, on its own. Cross-run history lives at /how-you-play. */
   run_card: { reads: PlayRead[]; sentence: string };
@@ -57,8 +60,6 @@ export interface DebriefView {
   unprompted_events: number;
   seed: string;
 }
-
-const PKG = LAST_JOB;
 
 function deps() {
   return { parser: modelParser(), narrator: modelNarrator() };
@@ -84,9 +85,10 @@ async function withoutBreakingPlay(what: string, write: () => Promise<void>): Pr
 
 /** Item 3 — a package plus a seed becomes a world. V1A holds the seed fixed per the
  *  build order (seed variation is V1C); the parameter exists so V1C is a config change. */
-export async function startRun(seed = 'last-job-001'): Promise<RunView> {
+export async function startRun(worldSlug?: string, seed?: string): Promise<RunView> {
+  const pkg = worldBySlug(worldSlug) ?? DEFAULT_WORLD;
   const runId = `ym_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
-  const world = loadWorld(PKG, { run_id: runId, seed, now: () => new Date().toISOString() });
+  const world = loadWorld(pkg, { run_id: runId, seed: seed?.trim() || defaultSeed(pkg.slug), now: () => new Date().toISOString() });
   await runStore().create(serializeWorld(world));
   const me = await ensureDeviceId();
   await withoutBreakingPlay('the owner of this run', () => runStore().claimRun(runId, me));
@@ -136,7 +138,8 @@ export async function debrief(runId: string): Promise<DebriefView | { error: str
   const evidence = observePlay(world);
   return {
     run_id: runId,
-    title: PKG.title,
+    world: world.pkg.slug,
+    title: world.pkg.title,
     run_card: buildRunCard(evidence),
     badges: awardBadges(world, evidence),
     outcome: scoreOutcome(world),
@@ -165,17 +168,31 @@ export async function howYouPlay(): Promise<HowYouPlayView> {
   };
 }
 
+/**
+ * Reload a run against the world it was played in, and never against any other. A run
+ * names its own package; if that package is gone from the build, the run is unreadable
+ * and saying so is the only honest answer — restoring it against a different world would
+ * produce a coherent-looking game with somebody else's facts in it.
+ */
 async function hydrate(runId: string): Promise<World | null> {
   const snap = await runStore().load(runId);
   if (!snap) return null;
-  return restoreWorld(PKG, snap, () => new Date().toISOString());
+  const pkg = worldById(snap.scenario_id);
+  if (!pkg) return null;
+  return restoreWorld(pkg, snap, () => new Date().toISOString());
+}
+
+/** V1A holds one seed per world. V1C varies it; this is the single place that changes. */
+function defaultSeed(slug: string): string {
+  return `${slug}-001`;
 }
 
 function view(world: World, outcome: RunOutcome | null = null): RunView {
   return {
     run_id: world.run_id,
-    title: PKG.title,
-    tagline: PKG.tagline,
+    world: world.pkg.slug,
+    title: world.pkg.title,
+    tagline: world.pkg.tagline,
     ui: world.projectUi(),
     transcript: buildTranscript(world),
     ended: world.ended ? { reason: world.ended.reason, label: world.ended.label } : null,

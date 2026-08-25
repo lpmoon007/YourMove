@@ -288,3 +288,16 @@ body { -webkit-font-smoothing: antialiased; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+
+/* The lobby, and the other-worlds list at the foot of a brief. */
+.ym-world-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 10px; }
+.ym-world-list a {
+  display: block; padding: 14px 16px; border: 1px solid var(--ym-line); background: var(--ym-panel);
+  color: var(--ym-ink); text-decoration: none;
+}
+.ym-world-list a:hover { border-color: var(--ym-hot); }
+.ym-world-list strong { display: block; font-size: 19px; }
+.ym-world-list span { display: block; font-size: 13px; color: var(--ym-dim); margin-top: 3px; }
+.ym-world-tagline { color: var(--ym-ink) !important; }
+.ym-elsewhere { margin-top: 34px; }
+.ym-elsewhere h2 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ym-dim); }

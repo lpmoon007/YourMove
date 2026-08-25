@@ -125,6 +125,24 @@ details. It exists for exactly one reason: so a profile survives a different dev
 - A test enumerates every field on an account. Adding anything personal has to break it
   first.
 
+## 7a. More than one world
+
+A world is a file in `content/yourmove/` and a line in `content/yourmove/index.ts`.
+Nothing else in the product should have to change.
+
+- Nothing outside the registry imports a specific world. A test walks `lib/`, `app/` and
+  `components/` and fails the build on `from '@/content/yourmove/<a-world>'`.
+- A run records its own `scenario_id` and is only ever restored against that package. A
+  run whose world has left the build is unreadable, and saying so is the honest answer —
+  restoring it against another world produces a coherent-looking game with somebody
+  else's facts in it.
+- Anything a player reads on the pre-run brief that is specific to a world comes from the
+  world: `example_actions`, `cast_note`, `house_rules`. They are required, and the
+  validator rejects an example action that names nobody and nothing in its own world,
+  because that is what a brief copied from another world looks like.
+- The front door is that world's brief when there is one world and a lobby when there are
+  several. Neither is a special case: the list decides.
+
 ## 8. Engine laws that are never negotiable
 
 Full detail in `docs/ENGINE.md`. The short version:
@@ -157,6 +175,7 @@ the screen.
 lib/aw/            engine — pure TypeScript, no I/O, no scenario knowledge
 lib/aw/play/       How You Play — reads finished runs, never read BY the engine
 content/yourmove/  worlds, as data. No logic: conditions are a declarative language
+content/yourmove/index.ts  the registry — a world is a file plus a line here
 lib/yourmove/      server actions, the session/account layer, and app-only glue
 app/, components/  the play interface and the facilitator console
 tests/aw/          the simulation harness

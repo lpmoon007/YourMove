@@ -1,3 +1,4 @@
+import { worldById } from '@/content/yourmove';
 import { consoleAuthorized, listRuns } from '@/lib/yourmove/console';
 
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,7 @@ export default async function ConsolePage({ searchParams }: { searchParams: Prom
         <thead>
           <tr>
             <th>Run</th>
+            <th>World</th>
             <th>Seed</th>
             <th>Status</th>
             <th>Turns</th>
@@ -43,6 +45,7 @@ export default async function ConsolePage({ searchParams }: { searchParams: Prom
               <td>
                 <a href={`/yourmove/console/${r.run_id}?key=${encodeURIComponent(key!)}`}>{r.run_id}</a>
               </td>
+              <td>{worldById(r.scenario_slug)?.title ?? r.scenario_slug}</td>
               <td>{r.seed}</td>
               <td>{r.status}</td>
               <td>{r.turns}</td>
@@ -52,7 +55,7 @@ export default async function ConsolePage({ searchParams }: { searchParams: Prom
           ))}
           {!runs.length ? (
             <tr>
-              <td colSpan={6} className="ym-empty">
+              <td colSpan={7} className="ym-empty">
                 Nothing yet. Play a run at <a href="/yourmove">/yourmove</a>.
               </td>
             </tr>

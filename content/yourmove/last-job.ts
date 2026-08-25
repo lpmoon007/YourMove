@@ -49,6 +49,15 @@ export const LAST_JOB: ScenarioPackage = {
       "you know something is wrong. Dez is at the window with two fingers in the blind. Marla is standing " +
       "exactly where she was when you came in. Cyrus is holding his phone like it bit him.\n\n" +
       "Dez says it without turning around. \"There's a car on the corner that's been there since we got back.\"",
+    // Everything on the pre-run brief that is about THIS world lives here, because the
+    // brief is one screen shared by every world. A second world that borrowed these would
+    // be introducing a player to people who are not in the room.
+    example_actions: ['ask Dez what he saw', 'read the call log', 'offer Marla ten grand'],
+    cast_note: 'These three people and you are the only ones who knew about tonight. Nobody else is coming.',
+    house_rules: [
+      'Nobody in the room is neutral. One of them is wrong about something and sure of it. One of them will lie to your face. You cannot tell which by how they behave.',
+      'Naming someone ends it. So does walking out with the bag. Everything else, you can come back from.',
+    ],
     player: {
       id: 'you',
       name: 'You',

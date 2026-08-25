@@ -42,7 +42,8 @@ export default async function ConsoleRunPage({
       </p>
       <h1>{d.run_id}</h1>
       <p className="ym-meta">
-        seed <code>{d.seed}</code> · content {d.content_version} · engine {d.engine_version} · {d.status} ·{' '}
+        {d.world_title} · seed <code>{d.seed}</code> · content {d.content_version} · engine {d.engine_version} ·{' '}
+        {d.status} ·{' '}
         {d.turns} turns · {d.world_time} world-minutes · {d.director_interventions} Director interventions ·{' '}
         {d.rescues_used} rescue{d.rescues_used === 1 ? '' : 's'} · {d.rejections} rejected write
         {d.rejections === 1 ? '' : 's'}

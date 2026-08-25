@@ -9,7 +9,7 @@ import 'server-only';
 
 import { timingSafeEqual } from 'node:crypto';
 
-import { LAST_JOB } from '@/content/yourmove/last-job';
+import { worldById } from '@/content/yourmove';
 import { restoreWorld, scoreOutcome, type RunOutcome } from '@/lib/aw';
 import { applyLfs12, LFS12_LENS_VERSION, type Lfs12Read } from '@/lib/aw/lens/lfs12';
 import { runStore, type RunSummary } from '@/lib/aw/store';
@@ -31,6 +31,9 @@ export async function listRuns(limit = 50): Promise<RunSummary[]> {
 
 export interface ConsoleRunDetail {
   run_id: string;
+  /** Which world this run was played in. With more than one, the console has to say. */
+  world: string;
+  world_title: string;
   seed: string;
   content_version: string;
   engine_version: string;
@@ -59,7 +62,10 @@ export interface ConsoleRunDetail {
 export async function runDetail(runId: string, opts: { lfs12: boolean }): Promise<ConsoleRunDetail | null> {
   const snap = await runStore().load(runId);
   if (!snap) return null;
-  const world = restoreWorld(LAST_JOB, snap);
+  // A run is only ever restored against the world it was played in.
+  const pkg = worldById(snap.scenario_id);
+  if (!pkg) return null;
+  const world = restoreWorld(pkg, snap);
 
   const moves = world.spine
     .all()
@@ -85,6 +91,8 @@ export async function runDetail(runId: string, opts: { lfs12: boolean }): Promis
 
   return {
     run_id: runId,
+    world: pkg.slug,
+    world_title: pkg.title,
     seed: world.seed,
     content_version: world.versions.content_version,
     engine_version: world.versions.engine_ruleset_version,
