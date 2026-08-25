@@ -10,8 +10,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { WorldSnapshot } from '../persistence';
 import type { Badge } from '../play/badges';
 import type { PlayEvidence } from '../play/observe';
+import { schemaProblemFrom } from './schema-check';
 import type { RunStore, RunSummary, StoredAccount } from './types';
-import { YM_SUPABASE_URL, ymServiceRoleKey } from '@/lib/yourmove/env';
+import { ymServiceRoleKey, ymSupabaseUrl } from '@/lib/yourmove/env';
 
 /** Supabase returns errors rather than throwing them. Silence is not acceptable for the
  *  event spine or for canonical truth, so every write is checked. */
@@ -36,11 +37,33 @@ function accountsSchemaMissing(error: { code?: string } | null): boolean {
 let client: SupabaseClient | null = null;
 function db(): SupabaseClient {
   if (!client) {
-    client = createClient(YM_SUPABASE_URL, ymServiceRoleKey(), {
+    client = createClient(ymSupabaseUrl(), ymServiceRoleKey(), {
       auth: { persistSession: false, autoRefreshToken: false },
     });
   }
   return client;
+}
+
+/**
+ * Is this actually a Your Move database?
+ *
+ * A Vercel project cloned from another app carries that app's generic Supabase variables,
+ * and those may point at a live database belonging to something else. Writing runs into
+ * somebody else's project is the worst failure this code could have, and it would be
+ * silent. So before anything is written, the store looks for a table that only Your Move's
+ * own migrations create.
+ *
+ * Returns null when the database is ours, or a sentence explaining what is wrong.
+ */
+export async function checkYourMoveSchema(): Promise<string | null> {
+  try {
+    // A plain select, deliberately. `head: true` would send HEAD, and a HEAD response has
+    // no body to carry PostgREST's error in — see lib/aw/store/schema-check.ts.
+    const res = await db().from('aw_account').select('id').limit(1);
+    return schemaProblemFrom({ status: res.status, error: res.error });
+  } catch (err) {
+    return `The configured database could not be reached: ${err instanceof Error ? err.message : String(err)}`;
+  }
 }
 
 export const supabaseStore: RunStore = {

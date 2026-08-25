@@ -301,3 +301,13 @@ body { -webkit-font-smoothing: antialiased; }
 .ym-world-tagline { color: var(--ym-ink) !important; }
 .ym-elsewhere { margin-top: 34px; }
 .ym-elsewhere h2 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ym-dim); }
+
+/* The setup check. */
+.ym-check { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 8px; }
+.ym-check li {
+  border: 1px solid var(--ym-line); border-left-width: 3px; background: var(--ym-panel); padding: 10px 14px;
+}
+.ym-check strong { display: block; font-size: 15px; }
+.ym-check span { display: block; margin-top: 4px; font-size: 13px; color: var(--ym-dim); }
+.ym-check-ok { border-left-color: var(--ym-cool); }
+.ym-check-bad { border-left-color: var(--ym-hot); }

@@ -152,6 +152,28 @@ Nothing else in the product should have to change.
 - The front door is that world's brief when there is one world and a lobby when there are
   several. Neither is a special case: the list decides.
 
+## 7b. Configuration fails loudly or not at all
+
+The deployed app spent days writing runs to memory because its variables were named
+`NEXT_PUBLIC_SUPABASE_URL` and the code read `NEXT_PUBLIC_YOURMOVE_SUPABASE_URL`. Nothing
+errored. Every run played perfectly and vanished on the next deploy.
+
+- Several names are accepted for each setting, Your Move's own first, generic ones after.
+- Accepting a generic name is only safe because the store proves the database is a Your
+  Move database — it looks for `aw_account` — before it writes a row. A hosting project
+  cloned from another app carries that app's variables, and they may point at a live
+  database belonging to something else.
+- Read the environment on use. A module-level constant freezes a value at import, which
+  is a quieter version of the same bug.
+- `/setup` says which store is live, which variable name supplied each setting, and what
+  is wrong when something is. It reports NAMES and yes/no, never values, never a URL,
+  never a key fragment.
+- A guard that cannot see is worse than no guard. The first version of the schema check
+  asked with `head: true`; supabase-js sends that as HTTP HEAD, a HEAD response has no
+  body, and PostgREST's "no such table" never arrived — so a missing table read as an
+  empty one and the page reported perfect health. Anything that is not a plain 200 or 206
+  is now refused.
+
 ## 8. Engine laws that are never negotiable
 
 Full detail in `docs/ENGINE.md`. The short version:
