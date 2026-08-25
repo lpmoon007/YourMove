@@ -89,6 +89,21 @@ test('nothing claims a person held something back when nothing was on offer', as
   }
 });
 
+test('looking at a thing you have already read says so, rather than nothing', async () => {
+  // "It goes the way you wanted it to" for a second read of the same document tells the
+  // player nothing and reads like the world lost track. Objects get the same honesty
+  // people do.
+  const w = fixture('last-job-001', 'reread');
+  const first = await takeTurn(w, 'read the call log');
+  assert.match(first.narration, /gives you this much|\d\d:\d\d|call/i, first.narration);
+  const second = await takeTurn(w, 'read the call log');
+  assert.match(
+    second.narration,
+    /again|already/i,
+    `a second read of the same document said nothing about it being a second read: ${second.narration}`,
+  );
+});
+
 test('a verb that needs a target and has none is blocked, in world, for no time', async () => {
   for (const [i, move] of ['search', 'ask', 'press', 'offer'].entries()) {
     const w = fixture('last-job-001', `bare-${i}`);

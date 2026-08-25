@@ -54,6 +54,7 @@ export const LAST_JOB: ScenarioPackage = {
     // be introducing a player to people who are not in the room.
     example_actions: ['ask Dez what he saw', 'read the call log', 'offer Marla ten grand'],
     cast_note: 'These three people and you are the only ones who knew about tonight. Nobody else is coming.',
+    clock_label: 'left before the van goes',
     house_rules: [
       'Nobody in the room is neutral. One of them is wrong about something and sure of it. One of them will lie to your face. You cannot tell which by how they behave.',
       'Naming someone ends it. So does walking out with the bag. Everything else, you can come back from.',
@@ -987,7 +988,10 @@ export const LAST_JOB: ScenarioPackage = {
       min: -2,
       max: 4,
       scoring: [
-        { when: { knows: { actor: 'you', fact: 'leak_source', status: ['observed'] } }, points: 2, note: 'you actually found out' },
+        // On holding the RIGHT answer, not on how firmly. A paid-for answer that arrives
+        // on a partial turn is downgraded to "told", and scoring on status alone told the
+        // player they left without knowing on the same screen that said they had it right.
+        { when: { knows: { actor: 'you', fact: 'leak_source', correct: true } }, points: 2, note: 'you actually found out' },
         { when: { flag: 'named_right', eq: true }, points: 2, note: 'and you said it out loud' },
         { when: { flag: 'named_wrong', eq: true }, points: -2, note: 'you named the wrong person' },
       ],

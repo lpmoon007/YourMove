@@ -12,8 +12,9 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 
-import { loadWorld, serializeWorld, takeTurn } from '@/lib/aw';
+import { buildReveal, loadWorld, scoreOutcome, serializeWorld, takeTurn } from '@/lib/aw';
 import { validateScenarioPackage, versionsFor, type ScenarioPackage } from '@/lib/aw/package';
+import { editDistance } from '@/lib/yourmove/dictation';
 import { DEFAULT_WORLD, WORLDS, worldById, worldBySlug } from '@/content/yourmove';
 
 /** A second package, so the routing can be tested before a second world is written. */
@@ -151,5 +152,176 @@ test('play evidence says which world it came from', async () => {
   for (const e of evidence) {
     assert.equal(e.world_id, DEFAULT_WORLD.slug, 'evidence does not name its world');
     assert.equal(e.scenario_id, DEFAULT_WORLD.id);
+  }
+});
+
+
+/**
+ * A smoke corpus built entirely out of a world's own data: talk to everybody in it, put
+ * your hands on everything in it, and do the things its own brief says you could do.
+ * Nothing here knows which world it is looking at, so a third one gets the same coverage
+ * on the day it is registered.
+ */
+function corpusFor(pkg: (typeof WORLDS)[number]): string[] {
+  const people = pkg.cast.map((c) => c.name.split(' ')[0]!);
+  const things = pkg.entities.filter((e) => e.searchable).map((e) => e.name.replace(/^the /, ''));
+  const look = pkg.verbs.find((v) => v.object_verb)?.aliases[0] ?? 'look at';
+  const pressure = pkg.verbs.find((v) => v.id !== 'ask' && v.speech && v.requires_target)?.aliases[0] ?? 'ask';
+  return [
+    ...pkg.world.example_actions,
+    ...people.map((n) => `ask ${n} what they saw`),
+    ...people.map((n) => `${pressure} ${n}`),
+    ...people.map((n) => `${n}, how sure are you?`),
+    ...things.map((t) => `${look} the ${t}`),
+    pkg.verbs.find((v) => !v.requires_target && !v.commitment)?.aliases[0] ?? 'wait',
+  ];
+}
+
+test('every world answers everything its own brief says you could do', async () => {
+  for (const pkg of WORLDS) {
+    const moves = corpusFor(pkg);
+    let clarifies = 0;
+    for (const [i, move] of moves.entries()) {
+      // A fresh world per move, so one bad turn cannot cascade into the next.
+      const w = loadWorld(pkg, { run_id: `smoke_${pkg.slug}_${i}`, seed: `${pkg.slug}-001` });
+      const turn = await takeTurn(w, move);
+      if (turn.outcome === 'clarify') clarifies += 1;
+      assert.ok(turn.narration.trim(), `${pkg.slug}: nothing came back from "${move}"`);
+      assert.equal(
+        /\berror\b|undefined|\[object|NaN|\{value\}/i.test(turn.narration),
+        false,
+        `${pkg.slug}: "${move}" produced a bug on the screen: ${turn.narration}`,
+      );
+    }
+    const rate = clarifies / moves.length;
+    assert.ok(
+      rate <= 0.2,
+      `${pkg.slug}: the world does not understand ${(rate * 100).toFixed(0)}% of what its own brief invites`,
+    );
+  }
+});
+
+test('every world can be played to an ending that reads like a sentence', async () => {
+  for (const pkg of WORLDS) {
+    const ender = pkg.verbs.find((v) => v.commitment);
+    assert.ok(ender, `${pkg.slug} has no way to end on purpose`);
+
+    const w = loadWorld(pkg, { run_id: `end_${pkg.slug}`, seed: `${pkg.slug}-001` });
+    for (const move of pkg.world.example_actions) {
+      const t = await takeTurn(w, move);
+      if (t.ended) break;
+    }
+    const last = await takeTurn(w, ender.aliases[0]!);
+    assert.ok(last.ended, `${pkg.slug}: "${ender.aliases[0]}" did not end the run`);
+    assert.ok(
+      /[.!?]$/.test(last.ended.label.trim()),
+      `${pkg.slug} ends on a label rather than a sentence: "${last.ended.label}"`,
+    );
+
+    // And the debrief has something to say about it.
+    const outcome = scoreOutcome(w);
+    assert.ok(outcome.headline.trim(), `${pkg.slug} produced no headline`);
+    assert.ok(outcome.axes.length >= 2, `${pkg.slug} scored on fewer than two axes`);
+    const reveal = buildReveal(w);
+    assert.ok(reveal.truth.length > 0, `${pkg.slug} has nothing to reveal at the end`);
+    for (const t of reveal.truth)
+      assert.equal(/\{value\}|\bwas something\b/i.test(t.statement ?? ''), false, `${pkg.slug}: ${t.statement}`);
+  }
+});
+
+test('every world has somebody sincerely wrong and somebody lying on purpose', () => {
+  // Part 4. Without both, there is nothing for a player to work out — only facts to
+  // collect, which is a quiz.
+  for (const pkg of WORLDS) {
+    assert.ok(pkg.cast.some((c) => c.reliability === 'mistaken'), `${pkg.slug} has nobody who is sincerely wrong`);
+    assert.ok(pkg.cast.some((c) => c.reliability === 'deceptive'), `${pkg.slug} has nobody who lies`);
+    // And a hidden thing worth being wrong about, with more than one possible answer.
+    const core = pkg.facts.filter((f) => f.required_for_top_outcome);
+    assert.ok(core.length >= 1, `${pkg.slug} has no fact that matters`);
+    const drawn = pkg.truth_template.variables.filter((v) => (v.choices?.length ?? 0) >= 2);
+    assert.ok(drawn.length >= 1, `${pkg.slug} draws nothing from its seed — every run of it is the same run`);
+  }
+});
+
+test('names in one world are far enough apart to be said out loud', () => {
+  // Speaking a move is a first-class way in, and a recognizer that cannot tell two cast
+  // members apart makes voice worse than typing. This is the check at authoring time.
+  for (const pkg of WORLDS) {
+    const firsts = pkg.cast.map((c) => c.name.split(' ')[0]!.toLowerCase());
+    for (const a of firsts)
+      for (const b of firsts) {
+        if (a === b) continue;
+        assert.ok(
+          editDistance(a, b) > 2 || a[0] !== b[0],
+          `${pkg.slug}: "${a}" and "${b}" are close enough that speech will confuse them`,
+        );
+      }
+  }
+});
+
+
+test('knowing the right answer is what scores, not how firmly you hold it', () => {
+  // A disclosure authored as first-hand is downgraded to hearsay when the turn it arrives
+  // on only partly succeeds. Scoring the truth axis on status alone therefore told a
+  // player "you decided without knowing" on the same screen that said "you had this
+  // right" — in both worlds. The fix is to score on the value being correct.
+  for (const pkg of WORLDS) {
+    const core = pkg.facts.filter((f) => f.required_for_top_outcome).map((f) => f.id);
+    assert.ok(core.length, `${pkg.slug} has no fact that decides the run`);
+
+    const scored = JSON.stringify(pkg.outcome_dimensions.flatMap((d) => d.scoring.map((r) => r.when)));
+    for (const fact of core) {
+      if (!scored.includes(`"${fact}"`)) continue; // not every core fact has to be an axis
+      const onStatusOnly = pkg.outcome_dimensions.some((d) =>
+        d.scoring.some((r) => {
+          const w = JSON.stringify(r.when);
+          return w.includes(`"${fact}"`) && w.includes('"status"') && !w.includes('"correct"');
+        }),
+      );
+      assert.equal(
+        onStatusOnly,
+        false,
+        `${pkg.slug}: an axis scores ${fact} on how the player came by it rather than on whether it is right`,
+      );
+    }
+  }
+});
+
+test('an axis credits a right answer however it arrived', async () => {
+  // The end-to-end version of the rule above: learn the deciding fact, correctly, and the
+  // world has to notice.
+  for (const pkg of WORLDS) {
+    const core = pkg.facts.find((f) => f.required_for_top_outcome)!;
+    const axis = pkg.outcome_dimensions.find((d) =>
+      d.scoring.some((r) => JSON.stringify(r.when).includes(`"${core.id}"`)),
+    );
+    if (!axis) continue;
+
+    const blank = loadWorld(pkg, { run_id: `blank_${pkg.slug}`, seed: `${pkg.slug}-001` });
+    const before = scoreOutcome(blank).axes.find((a) => a.key === axis.key)!;
+
+    // Hand the player the true answer the way a character would, hearsay and all.
+    const knowing = loadWorld(pkg, { run_id: `knowing_${pkg.slug}`, seed: `${pkg.slug}-001` });
+    knowing.commit(
+      [
+        {
+          kind: 'knowledge',
+          actor: knowing.playerId,
+          fact: core.id,
+          status: 'told',
+          value: '@canonical',
+          source: 'observation',
+          fidelity: 1,
+          confidence: 0.8,
+        },
+      ],
+      { actor_id: 'world', actor_type: 'world_process', verb: 'test_seed', targets: [], visibility: ['*'] },
+    );
+    const after = scoreOutcome(knowing).axes.find((a) => a.key === axis.key)!;
+
+    assert.ok(
+      after.points > before.points,
+      `${pkg.slug}: "${axis.label}" scores the same whether or not the player knows ${core.id}`,
+    );
   }
 });

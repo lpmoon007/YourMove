@@ -255,6 +255,7 @@ export class World {
       you: { name: you.name, role: you.role, description: you.you, objective: you.objective },
       clock: st.clock,
       minutes_remaining: this.minutesRemaining,
+      clock_label: this.pkg.world.clock_label,
       location: loc ? { id: loc.id, name: loc.name, description: loc.description } : null,
       present: this.presentActors().map((id) => {
         const c = this.character(id)!;

@@ -136,10 +136,19 @@ Nothing else in the product should have to change.
   run whose world has left the build is unreadable, and saying so is the honest answer —
   restoring it against another world produces a coherent-looking game with somebody
   else's facts in it.
-- Anything a player reads on the pre-run brief that is specific to a world comes from the
-  world: `example_actions`, `cast_note`, `house_rules`. They are required, and the
+- Anything a player reads that is specific to a world comes from the world:
+  `example_actions`, `cast_note`, `house_rules`, `clock_label`. They are required, and the
   validator rejects an example action that names nobody and nothing in its own world,
-  because that is what a brief copied from another world looks like.
+  because that is what a brief copied from another world looks like. The clock label was
+  the one that got away — "left before the van goes" was hardcoded in a component and
+  read as nonsense the moment a second world had a clock.
+- Score the deciding fact on the value being RIGHT (`knows: { correct: true }`), never on
+  how firmly it is held. A disclosure authored as first-hand is downgraded to hearsay when
+  the turn it arrives on only partly succeeds, so scoring on status told a player "you
+  decided without knowing" on the same screen that said "you had this right".
+- A copy rule that only sweeps the first world is decoration. The readability and
+  introduction checks loop over `WORLDS`, and every world is played through a corpus built
+  from its own cast, its own objects and its own examples.
 - The front door is that world's brief when there is one world and a lobby when there are
   several. Neither is a special case: the list decides.
 

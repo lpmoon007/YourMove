@@ -313,10 +313,15 @@ function defaultSummary(
   // Saying somebody "keeps the rest where you can see them holding it" when they had
   // nothing to give is the world inventing a withholding that never happened, and it
   // reads as the game being broken. What actually happened gets said instead.
-  if (person && !revealed) {
-    if (repeated) return `${t} says it again, the same way, and does not add anything to it.`;
-    if (outcome === 'success' || outcome === 'partial')
-      return `${t} answers you, and there is nothing in it you did not already have.`;
+  if (!revealed && (outcome === 'success' || outcome === 'partial')) {
+    if (person)
+      return repeated
+        ? `${t} says it again, the same way, and does not add anything to it.`
+        : `${t} answers you, and there is nothing in it you did not already have.`;
+    if (intent.targets[0])
+      return repeated
+        ? `You go over ${t} again and it says exactly what it said the first time.`
+        : `You go through ${t} properly. There is nothing in it you did not already have.`;
   }
 
   switch (outcome) {

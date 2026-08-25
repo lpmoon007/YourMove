@@ -15,7 +15,7 @@ export type Pred =
   | { flag: string; eq?: string | number | boolean; gte?: number; lt?: number; set?: boolean }
   | { clock: { gte?: number; lt?: number } }
   | { turns: { gte?: number; lt?: number } }
-  | { knows: { actor: string; fact: string; status?: KnowledgeStatus[] } }
+  | { knows: { actor: string; fact: string; status?: KnowledgeStatus[]; correct?: boolean } }
   | { present: string }
   | { alive: string }
   | { object: { id: string; is: string } }
@@ -69,7 +69,16 @@ export function evalPred(p: Pred | undefined | null, ctx: PredContext): boolean 
   if ('knows' in p) {
     const rec = ctx.knowledge[p.knows.actor]?.[p.knows.fact];
     if (!rec || rec.status === 'unknown') return false;
-    return p.knows.status ? p.knows.status.includes(rec.status) : true;
+    if (p.knows.status && !p.knows.status.includes(rec.status)) return false;
+    // Whether what they hold is actually TRUE. Scoring on how firmly somebody believes
+    // something says a player "decided without knowing" on the same screen that tells
+    // them they had it right, because a partial answer downgrades what it discloses.
+    // Engine-side only: this reads canonical truth, which no projection ever carries.
+    if (p.knows.correct !== undefined) {
+      const matches = rec.value !== null && rec.value === ctx.truth[p.knows.fact];
+      if (matches !== p.knows.correct) return false;
+    }
+    return true;
   }
   if ('present' in p) return ctx.state.positions[p.present] === ctx.playerLocation;
   if ('alive' in p) return ctx.state.alive[p.alive] !== false;

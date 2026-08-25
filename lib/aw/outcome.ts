@@ -42,6 +42,9 @@ export function scoreOutcome(world: World): RunOutcome {
       points += rule.points;
       notes.push(rule.note);
     }
+    // An axis where nothing scored still has to say something. A band with no reason
+    // under it renders as a label and a dash, which reads as a bug rather than a verdict.
+    if (!notes.length) notes.push(`nothing on this went your way: ${d.question.replace(/\.$/, '').toLowerCase()}`);
     points = Math.max(d.min, Math.min(d.max, points));
     const band =
       [...d.bands].sort((a, b) => b.at_least - a.at_least).find((b) => points >= b.at_least)?.label ??

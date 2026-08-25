@@ -257,6 +257,10 @@ export interface ScenarioPackage {
     example_actions: string[];
     /** One line under the cast, about who is and is not in this world. */
     cast_note: string;
+    /** What the clock is counting down to, in three or four words, under the number:
+     *  "left before the van goes", "until the presses start". Required for the same
+     *  reason the rest of this is: a label written for one world is wrong in the next. */
+    clock_label: string;
     /** What a player has to know about how THIS world behaves that they could not guess:
      *  who can be trusted, what ends the run, what the clock means here. Required, and
      *  worded as "Something short. The rest of it." — the first sentence is bolded. */
@@ -461,6 +465,8 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
       err('example_names_nothing', `example action "${ex}" names nobody and nothing in this world`);
   if (!p.world.cast_note?.trim())
     err('no_cast_note', 'world.cast_note is required — the player needs to know who else is coming');
+  if (p.world.duration_minutes !== null && !p.world.clock_label?.trim())
+    err('no_clock_label', 'world.clock_label is required — the number on the clock has to say what it is counting down to');
   if ((p.world.house_rules ?? []).length < 2)
     err('no_house_rules', 'world.house_rules needs at least two — what ends a run here, and who can be trusted');
   for (const v of p.verbs) {

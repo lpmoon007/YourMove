@@ -192,6 +192,8 @@ export interface UiProjection {
   you: { name: string; role: string; description: string; objective: string };
   clock: number;
   minutes_remaining: number | null;
+  /** What the clock is counting down to, in this world's words. */
+  clock_label: string;
   location: { id: string; name: string; description: string } | null;
   present: { id: string; name: string; role: string; intro: string; disposition_read: string }[];
   resources: { id: string; label: string; amount: number }[];

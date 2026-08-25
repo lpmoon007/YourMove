@@ -75,7 +75,7 @@ export function PlayApp({ initial }: { initial: RunView }) {
               You are <strong>{ui.you.role}</strong>. {ui.you.objective}
             </p>
           </div>
-          <Clock minutes={remaining} />
+          <Clock minutes={remaining} label={ui.clock_label} />
         </header>
 
         <div className="ym-body">

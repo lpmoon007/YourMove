@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 /** How long the count-down animation takes, whatever number of minutes it covers. */
 const SPEND_MS = 900;
 
-export function Clock({ minutes }: { minutes: number | null }) {
+export function Clock({ minutes, label }: { minutes: number | null; label: string }) {
   // Shown in seconds throughout, so the descent can pass through them.
   const target = minutes === null ? null : minutes * 60;
   const [shown, setShown] = useState<number | null>(target);
@@ -59,11 +59,9 @@ export function Clock({ minutes }: { minutes: number | null }) {
       <span className="ym-clock-num" aria-hidden>
         {shown === null ? '—' : `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`}
       </span>
-      <span className="ym-clock-unit">
-        {minutes === null ? 'no clock' : 'left before the van goes'}
-      </span>
+      <span className="ym-clock-unit">{minutes === null ? 'no clock' : label}</span>
       <span className="ym-sr">
-        {minutes === null ? 'No clock on this run.' : `${minutes} minutes left before the van goes.`}
+        {minutes === null ? 'No clock on this run.' : `${minutes} minutes ${label}.`}
       </span>
     </div>
   );
