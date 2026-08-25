@@ -65,8 +65,8 @@ const dispatcher: RunStore = {
   get kind() {
     return (chosen ?? memoryStore).kind;
   },
-  async create(s) {
-    return (await active()).create(s);
+  async create(s, pkg) {
+    return (await active()).create(s, pkg);
   },
   async save(s, t, o) {
     return (await active()).save(s, t, o);

@@ -89,7 +89,7 @@ export async function startRun(worldSlug?: string, seed?: string): Promise<RunVi
   const pkg = worldBySlug(worldSlug) ?? DEFAULT_WORLD;
   const runId = `ym_${randomUUID().replace(/-/g, '').slice(0, 20)}`;
   const world = loadWorld(pkg, { run_id: runId, seed: seed?.trim() || defaultSeed(pkg.slug), now: () => new Date().toISOString() });
-  await runStore().create(serializeWorld(world));
+  await runStore().create(serializeWorld(world), pkg);
   const me = await ensureDeviceId();
   await withoutBreakingPlay('the owner of this run', () => runStore().claimRun(runId, me));
   return view(world);

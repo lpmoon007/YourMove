@@ -28,9 +28,24 @@ const player = (id: string) => {
   return p;
 };
 
+/** A run that is being saved without ever having been created — only reachable in tests
+ *  and after a restart, and cheaper to allow than to argue with. */
+function blank(snapshot: WorldSnapshot): void {
+  RUNS.set(snapshot.run_id, {
+    snapshot,
+    created_at: new Date().toISOString(),
+    ended_at: null,
+    turns: [],
+    outcome: null,
+    lenses: {},
+  });
+}
+
 export const memoryStore: RunStore = {
   kind: 'memory',
 
+  // The package is only needed by a store that has to register a world before it can
+  // reference one. Nothing in memory references anything.
   async create(snapshot) {
     RUNS.set(snapshot.run_id, {
       snapshot,
@@ -44,7 +59,7 @@ export const memoryStore: RunStore = {
 
   async save(snapshot, turn, outcome) {
     const row = RUNS.get(snapshot.run_id);
-    if (!row) return this.create(snapshot);
+    if (!row) return blank(snapshot);
     row.snapshot = snapshot;
     if (turn) row.turns.push(turn);
     if (outcome) row.outcome = outcome;

@@ -7,6 +7,7 @@ import 'server-only';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+import { ENGINE_RULESET_VERSION, type ScenarioPackage } from '../package';
 import type { WorldSnapshot } from '../persistence';
 import type { Badge } from '../play/badges';
 import type { PlayEvidence } from '../play/observe';
@@ -69,7 +70,13 @@ export async function checkYourMoveSchema(): Promise<string | null> {
 export const supabaseStore: RunStore = {
   kind: 'supabase',
 
-  async create(snapshot) {
+  async create(snapshot, pkg) {
+    // A run cites a world, and the database enforces that the world exists: aw_run
+    // .scenario_id is a foreign key to aw_scenario. Nothing had ever written that row,
+    // so the first run to reach a real database would have been rejected — which stayed
+    // invisible for as long as the app was quietly running on in-memory storage.
+    await registerWorld(pkg);
+
     const runRow = {
       id: snapshot.run_id,
       scenario_id: snapshot.scenario_id,
@@ -401,6 +408,43 @@ export const supabaseStore: RunStore = {
     );
   },
 };
+
+/**
+ * Make sure the world this run belongs to exists, and that the exact package being played
+ * is on the record beside it.
+ *
+ * The version row is the point: a run names a content_version, and without the package
+ * behind it that citation is a promise nobody can check. Published versions are immutable
+ * in the database, so this inserts and ignores a duplicate — it never updates one.
+ */
+async function registerWorld(pkg: ScenarioPackage): Promise<void> {
+  orThrow(
+    'registering the world',
+    await db().from('aw_scenario').upsert(
+      {
+        id: pkg.id,
+        slug: pkg.slug,
+        title: pkg.title,
+        tagline: pkg.tagline,
+        format: pkg.format,
+        status: 'published',
+      },
+      { onConflict: 'id', ignoreDuplicates: true },
+    ),
+  );
+  orThrow(
+    'recording the version of the world being played',
+    await db().from('aw_scenario_version').insert({
+      scenario_id: pkg.id,
+      content_version: pkg.content_version,
+      schema_version: pkg.schema_version,
+      engine_ruleset_version: ENGINE_RULESET_VERSION,
+      payload: pkg,
+    }),
+    // Already published. That is the normal case on every run after the first.
+    ['23505'],
+  );
+}
 
 /** The spine is append-only in the database, so only what is new is inserted. There is no
  *  update path here, and there is no update path in Postgres either. */

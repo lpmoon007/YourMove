@@ -168,6 +168,11 @@ errored. Every run played perfectly and vanished on the next deploy.
 - `/setup` says which store is live, which variable name supplied each setting, and what
   is wrong when something is. It reports NAMES and yes/no, never values, never a URL,
   never a key fragment.
+- The harness runs with no database, so a constraint in the schema is invisible to it
+  unless something checks deliberately. `aw_run.scenario_id` is a foreign key to
+  `aw_scenario`, nothing ever wrote that row, and the first run to reach a real database
+  would have been rejected — hidden for as long as the app was quietly on memory. The
+  store registers the world and the exact package version before it writes the run.
 - A guard that cannot see is worse than no guard. The first version of the schema check
   asked with `head: true`; supabase-js sends that as HTTP HEAD, a HEAD response has no
   body, and PostgREST's "no such table" never arrived — so a missing table read as an

@@ -3,6 +3,7 @@
 // ship: Supabase (production) and in-memory (local play, CI, and the test harness).
 
 import type { AdjudicationRecord } from '../engine';
+import type { ScenarioPackage } from '../package';
 import type { RunOutcome } from '../outcome';
 import type { WorldSnapshot } from '../persistence';
 import type { Badge } from '../play/badges';
@@ -26,7 +27,11 @@ export interface TurnRecord {
 
 export interface RunStore {
   readonly kind: 'supabase' | 'memory';
-  create(snapshot: WorldSnapshot): Promise<void>;
+  /** The package comes with the run because a run cites a world that has to exist first:
+   *  `aw_run.scenario_id` is a foreign key, and the world it points at is registered here
+   *  or the run cannot be written at all. The store is handed the package rather than
+   *  looking one up, so nothing in the engine has to know which worlds exist. */
+  create(snapshot: WorldSnapshot, pkg: ScenarioPackage): Promise<void>;
   /** Persist the world after a turn: the snapshot, any new spine events, the
    *  adjudication provenance for this turn, and the outcome once the run ends. */
   save(snapshot: WorldSnapshot, turn: TurnRecord | null, outcome: RunOutcome | null): Promise<void>;
