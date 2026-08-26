@@ -650,7 +650,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
     {
       id: 'standfast',
       label: 'Hold your story',
-      aliases: ['stand fast', 'stick to my story', 'deny it', 'hold the line', 'hold my story', 'nothing more to say'],
+      aliases: ['stand fast', 'hold your story', 'hold my story', 'stick to my story', 'deny it', 'hold the line', 'nothing more to say'],
       description: 'Say the statement is true, say you are done, and make them decide.',
       commitment_line:
         'You said the statement stands and that you were finished talking. Ruiz turned the tape off herself, which is not a thing you expected to feel like a verdict.',

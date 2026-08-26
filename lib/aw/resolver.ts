@@ -152,14 +152,18 @@ function discoveries(
 
   for (const p of world.pkg.discovery_paths) {
     if (p.via_verb && !p.via_verb.includes(intent.verb)) continue;
-    if (p.via_target && !(target && p.via_target.includes(target))) continue;
+    // Any thing the player named, not only the first one. "Compare the board against the
+    // paper log" names two objects, and matching only the first meant the log — the whole
+    // point of the sentence — was never looked at.
+    if (p.via_target && !intent.targets.some((t) => p.via_target!.includes(t))) continue;
     if (!p.via_verb && !p.via_target) continue; // override-only path
     // A targeted question gets the answer; a vague one does not.
     if (p.topic_hints?.length && !p.topic_hints.some((h) => said.has(h.toLowerCase()))) continue;
     if (!evalPred(p.requires, ctx)) continue;
 
     const d = p.disclosure ?? { status: 'told' as KnowledgeStatus, value: '@holder_belief' };
-    const source = d.source ?? target ?? 'observation';
+    const named = p.via_target ? intent.targets.find((t) => p.via_target!.includes(t)) : null;
+    const source = d.source ?? named ?? target ?? 'observation';
     const value = resolveDisclosureValue(world, p, source);
     if (value === null) continue; // the source does not actually hold it — nothing to give
 
@@ -293,7 +297,11 @@ function resolveOverride(
     draw,
     capability_score: 1,
     opposition_score: 0,
-    reveals: (o.reveals ?? []).map((r) => ({ ...r })),
+    // An override's reveals belong to the branch that matched. Pressing somebody who is
+    // NOT the culprit was still trying to have them disclose who it was — the invariant
+    // engine refused it every time, correctly and silently, so the only sign was a
+    // rejected write nobody was reading.
+    reveals: o.outcome === 'from_truth' && !matched ? [] : (o.reveals ?? []).map((r) => ({ ...r })),
     summary: (matched ? o.summary : (o.summary_else ?? o.summary)),
   };
 }

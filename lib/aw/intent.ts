@@ -51,9 +51,22 @@ export function deterministicParse(input: ParseInput): Intent {
   // than a word that happened to appear. "Give Vane my word that no other NAME leaves this
   // tent" is not an accusation, and it hanged him. A single word only selects a commitment
   // when it opens the sentence; a phrase ("name the forger") is specific enough anywhere.
-  const opening = low.trim().split(/\s+/).slice(0, 2);
-  const selectable = (v: VerbDef, alias: string) =>
-    !v.commitment || alias.includes(' ') || opening.includes(alias);
+  const words = low.trim().split(/\s+/);
+  /** Which word does this alias start at? -1 when it is not there as whole words. */
+  const startsAt = (alias: string): number => {
+    const parts = alias.split(' ');
+    for (let i = 0; i + parts.length <= words.length; i += 1)
+      if (parts.every((p, k) => words[i + k] === p)) return i;
+    return -1;
+  };
+  // You commit by LEADING with it. "Hold pressure for Eastgate" is a decision; "ask
+  // Salcedo about holding pressure for Eastgate" is a question, and the difference is
+  // where the phrase sits. Three words of grace covers "I would rather sign it".
+  const selectable = (v: VerbDef, alias: string) => {
+    if (!v.commitment) return true;
+    const at = startsAt(alias);
+    return at >= 0 && at <= 2;
+  };
 
   let verb: VerbDef | null = null;
   let matchLen = 0;

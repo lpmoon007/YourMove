@@ -453,3 +453,71 @@ test('everything on the table can actually be looked at', async () => {
     }
   }
 });
+
+
+test("a world's own commitment labels are things a player can type", async () => {
+  // The button on the front of the house says "Hold pressure for Eastgate", and typing
+  // exactly that produced "which one?" — because a commitment has to lead the sentence and
+  // the alias list did not contain the phrasing the label itself uses.
+  for (const pkg of WORLDS) {
+    for (const verb of pkg.verbs.filter((v) => v.commitment)) {
+      const typed = verb.label.toLowerCase();
+      const w = loadWorld(pkg, { run_id: `label_${verb.id}`, seed: `${pkg.slug}-001` });
+      const line = verb.requires_target ? `${typed} ${pkg.cast[0]!.name.split(' ')[0]}` : typed;
+      const turn = await takeTurn(w, line);
+      assert.notEqual(
+        turn.outcome,
+        'clarify',
+        `${pkg.slug}: the world does not understand its own label for ${verb.id} — "${line}"`,
+      );
+      assert.ok(turn.ended, `${pkg.slug}: "${line}" is the label of an ending and did not end the run`);
+    }
+  }
+});
+
+test('naming two things looks at the one you asked about', async () => {
+  // "Compare the board against the paper log" names two objects, and only the first was
+  // being matched against discovery paths — so the log, which is the entire point of the
+  // sentence, was never read.
+  for (const pkg of WORLDS) {
+    const things = pkg.entities.filter((e) => e.searchable);
+    if (things.length < 2) continue;
+    const look = pkg.verbs.find((v) => v.object_verb);
+    if (!look) continue;
+
+    const [first, second] = things;
+    const w = loadWorld(pkg, { run_id: `both_${pkg.slug}`, seed: `${pkg.slug}-001` });
+    const turn = await takeTurn(w, `${look.aliases[0]} ${first!.name} against ${second!.name}`);
+    assert.ok(
+      turn.adjudication.intent.targets.includes(second!.id),
+      `${pkg.slug}: naming ${second!.id} alongside ${first!.id} lost it entirely`,
+    );
+  }
+});
+
+
+test("a world's own invariants never fire in ordinary play", async () => {
+  // An invariant that fires is either the engine attempting something illegal or the world
+  // declaring something untrue. Both are bugs, and both fail SILENTLY: the write is
+  // rejected, the narration prints anyway, and an authored beat simply stops happening.
+  // One of these made a character's entire confession unreachable and nothing said so.
+  for (const pkg of WORLDS) {
+    const moves = corpusFor(pkg);
+    for (const [i, move] of moves.entries()) {
+      const w = loadWorld(pkg, { run_id: `inv_${pkg.slug}_${i}`, seed: `${pkg.slug}-001` });
+      // A few turns, so state has actually accumulated when the later ones land.
+      for (const m of [...moves.slice(0, 3), move]) {
+        const t = await takeTurn(w, m);
+        if (t.ended) break;
+      }
+      const violations = w.spine
+        .all()
+        .flatMap((e) => (e.payload.violations as string[] | undefined) ?? []);
+      assert.deepEqual(
+        violations,
+        [],
+        `${pkg.slug}: playing "${move}" tripped one of the world's own invariants:\n  ${violations.join('\n  ')}`,
+      );
+    }
+  }
+});

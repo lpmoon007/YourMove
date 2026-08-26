@@ -142,9 +142,17 @@ Nothing else in the product should have to change.
   because that is what a brief copied from another world looks like. The clock label was
   the one that got away — "left before the van goes" was hardcoded in a component and
   read as nonsense the moment a second world had a clock.
-- A commitment cannot be taken back, so a one-word alias for one only counts when it opens
-  the sentence. "Give Vane my word that no other NAME leaves this tent" was parsed as an
-  accusation and hanged him. Phrases ("name the forger") are specific enough anywhere.
+- A commitment cannot be taken back, so you commit by LEADING with it: the alias has to
+  start within the first three words. "Give Vane my word that no other NAME leaves this
+  tent" was parsed as an accusation and hanged him; "ask Salcedo about holding pressure for
+  Eastgate" is a question, not a decision. A verb's own label must be typeable, and a test
+  types every one of them.
+- An invariant that fires is a bug, and it fails silently: the write is rejected, the
+  narration prints anyway, and an authored beat stops happening. One nonsense `forbidden`
+  rule made a character's whole confession unreachable and nothing said so. Every world is
+  played through its own corpus and any violation fails the build.
+- An override's `reveals` belong to the branch that matched. Pressing somebody who is not
+  the culprit was asking them to disclose who was, and only the invariant engine noticed.
 - A verb alias and an object name that are the same word means the verb wins and the object
   cannot be touched: `order` the verb ate "the general's order" the document. Every
   searchable thing in every world is looked at by a test, and the brief must never teach a
