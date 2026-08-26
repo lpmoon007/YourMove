@@ -12,6 +12,8 @@ import { test } from 'node:test';
 import { takeTurn } from '@/lib/aw';
 import { checkCapability } from '@/lib/aw/capability';
 import { deterministicParse } from '@/lib/aw/intent';
+import { WORLDS } from '@/content/yourmove';
+import { loadWorld } from '@/lib/aw';
 import { fixture, PKG } from './_harness';
 
 const surface = (w: ReturnType<typeof fixture>) => ({
@@ -162,4 +164,43 @@ test('a clarifying question costs nothing and leaves the world exactly as it was
   await takeTurn(w, 'hmm');
   assert.equal(w.clock, before.clock, 'not understanding the player cost them time');
   assert.equal(JSON.stringify(w.store.serialize()), before.state, 'not understanding the player changed the world');
+});
+
+
+test('an ordinary sentence can never end a run by accident', async () => {
+  // "Give Vane my word that no other NAME leaves this tent" was parsed as an accusation
+  // and hanged him, because a run-ending verb carried the bare alias "name" and the parser
+  // takes the longest alias anywhere in the sentence. A commitment cannot be taken back,
+  // so a single word only selects one when it opens the sentence.
+  for (const pkg of WORLDS) {
+    const person = pkg.cast[0]!.name.split(' ')[0]!;
+    const asking = pkg.verbs.find((v) => v.question_verb)?.aliases[0] ?? 'ask';
+
+    for (const verb of pkg.verbs.filter((v) => v.commitment)) {
+      for (const alias of [verb.id, ...verb.aliases].filter((a) => !a.includes(' '))) {
+        const sentence = `${asking} ${person} about the ${alias}`;
+        const w = loadWorld(pkg, { run_id: `acc_${verb.id}_${alias}`, seed: `${pkg.slug}-001` });
+        const turn = await takeTurn(w, sentence);
+        assert.equal(
+          turn.ended,
+          null,
+          `${pkg.slug}: "${sentence}" ended the run through the commitment verb "${verb.id}"`,
+        );
+      }
+    }
+  }
+});
+
+test('a commitment still works when it is what the player is actually saying', async () => {
+  // The rule above must not make the endings unreachable, which would be the worse bug.
+  for (const pkg of WORLDS) {
+    for (const verb of pkg.verbs.filter((v) => v.commitment)) {
+      const said = verb.aliases[0] ?? verb.id;
+      const w = loadWorld(pkg, { run_id: `commit_${verb.id}`, seed: `${pkg.slug}-001` });
+      // Some commitments need a target; give them the first person in the room.
+      const line = verb.requires_target ? `${said} ${pkg.cast[0]!.name.split(' ')[0]}` : said;
+      const turn = await takeTurn(w, line);
+      assert.ok(turn.ended, `${pkg.slug}: "${line}" no longer ends the run, so this ending is unreachable`);
+    }
+  }
 });

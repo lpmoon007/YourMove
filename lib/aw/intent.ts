@@ -45,15 +45,26 @@ export function deterministicParse(input: ParseInput): Intent {
   const low = ` ${raw.toLowerCase().replace(/[^\p{L}\p{N}$.,'\- ]/gu, ' ')} `;
 
   // --- verb: longest alias wins, so "hand over" beats "hand" ---
+  //
+  // With one exception, and it is not a small one. A COMMITMENT ends the run and cannot be
+  // taken back, so a one-word alias for it has to be the thing the player is saying rather
+  // than a word that happened to appear. "Give Vane my word that no other NAME leaves this
+  // tent" is not an accusation, and it hanged him. A single word only selects a commitment
+  // when it opens the sentence; a phrase ("name the forger") is specific enough anywhere.
+  const opening = low.trim().split(/\s+/).slice(0, 2);
+  const selectable = (v: VerbDef, alias: string) =>
+    !v.commitment || alias.includes(' ') || opening.includes(alias);
+
   let verb: VerbDef | null = null;
   let matchLen = 0;
   for (const v of input.vocabulary) {
     for (const alias of [v.id, ...v.aliases]) {
       const a = alias.toLowerCase().replace(/_/g, ' ');
-      if (a.length > matchLen && new RegExp(`(^|\\s)${escapeRe(a)}(\\s|$)`, 'i').test(low)) {
-        verb = v;
-        matchLen = a.length;
-      }
+      if (a.length <= matchLen) continue;
+      if (!new RegExp(`(^|\\s)${escapeRe(a)}(\\s|$)`, 'i').test(low)) continue;
+      if (!selectable(v, a)) continue;
+      verb = v;
+      matchLen = a.length;
     }
   }
 

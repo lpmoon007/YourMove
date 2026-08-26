@@ -615,7 +615,7 @@ export const LATE_EDITION: ScenarioPackage = {
     {
       id: 'promise',
       label: 'Promise',
-      aliases: ['promise', 'guarantee', 'swear', 'assure', 'give my word', 'offer', 'agree'],
+      aliases: ['promise', 'guarantee', 'swear', 'assure', 'my word', 'give my word', 'give you my word', 'offer', 'agree'],
       description: 'Put your word on the table. It is the only thing in this room that is actually yours to spend.',
       default_minutes: 2,
       requires_target: true,

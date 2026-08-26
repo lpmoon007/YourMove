@@ -14,9 +14,10 @@ import { LAST_JOB } from './last-job';
 import { LATE_EDITION } from './late-edition';
 import { FOUR_MINUTES } from './four-minutes';
 import { NO_PREY_NO_PAY } from './no-prey-no-pay';
+import { THE_FAIR_COPY } from './the-fair-copy';
 
 /** Every world a player can enter, in the order they are offered. */
-export const WORLDS: ScenarioPackage[] = [LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY];
+export const WORLDS: ScenarioPackage[] = [LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY, THE_FAIR_COPY];
 
 /** Where a player lands when they have not asked for anything in particular. */
 export const DEFAULT_WORLD: ScenarioPackage = WORLDS[0]!;
@@ -35,4 +36,4 @@ export function worldById(id: string): ScenarioPackage | null {
   return WORLDS.find((w) => w.id === id) ?? null;
 }
 
-export { LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY };
+export { LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY, THE_FAIR_COPY };

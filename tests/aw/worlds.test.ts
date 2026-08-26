@@ -425,3 +425,31 @@ test('a failure says what actually failed', async () => {
     }
   }
 });
+
+
+test('everything on the table can actually be looked at', async () => {
+  // A verb alias and an object name can be the same word, and the verb wins: "read the
+  // general's order" was parsed as GIVING an order, so the one document that changes what
+  // the court is required to do could not be read at all. Nothing catches that except
+  // trying it.
+  for (const pkg of WORLDS) {
+    const look = pkg.verbs.find((v) => v.object_verb);
+    if (!look) continue;
+
+    for (const entity of pkg.entities.filter((e) => e.searchable)) {
+      for (const phrasing of [`${look.aliases[0]} ${entity.name}`, `${look.aliases[1] ?? look.id} ${entity.name}`]) {
+        const w = loadWorld(pkg, { run_id: `see_${entity.id}`, seed: `${pkg.slug}-001` });
+        const turn = await takeTurn(w, phrasing);
+        assert.equal(
+          turn.adjudication.intent.verb,
+          look.id,
+          `${pkg.slug}: "${phrasing}" was understood as "${turn.adjudication.intent.verb}" rather than looking at something`,
+        );
+        assert.ok(
+          turn.adjudication.intent.targets.includes(entity.id),
+          `${pkg.slug}: "${phrasing}" did not resolve to ${entity.id} — it found ${JSON.stringify(turn.adjudication.intent.targets)}`,
+        );
+      }
+    }
+  }
+});

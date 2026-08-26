@@ -166,7 +166,10 @@ test('a player never meets a name they were not introduced to', () => {
 test('a character introduction gives away nothing the run is about', () => {
   // The intro says who someone is to you. Whether they are honest, mistaken or lying is
   // the entire game, and the player has to earn it.
-  const forbidden = /\b(lie|lies|lying|liar|deceptive|deceit|mistaken|honest|dishonest|untrustworthy|guilty|innocent|culprit|betray)\w*\b/i;
+  // Whole words only. With a trailing \w* this fired on "lieutenant", and a guard that
+  // flags an innocent word teaches an author to write around the guard instead of the rule.
+  const forbidden =
+    /\b(lie|lies|lied|lying|liar|liars|deceptive|deceit|deceitful|deceive|deceives|mistaken|honest|honestly|dishonest|untrustworthy|guilty|innocent|culprit|betray|betrays|betrayed|betrayal)\b/i;
   for (const pkg of WORLDS)
     for (const c of pkg.cast) {
       assert.equal(forbidden.test(c.intro), false, `${pkg.slug}: ${c.id}'s intro leaks their reliability: "${c.intro}"`);

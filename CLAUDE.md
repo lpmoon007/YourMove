@@ -142,6 +142,13 @@ Nothing else in the product should have to change.
   because that is what a brief copied from another world looks like. The clock label was
   the one that got away — "left before the van goes" was hardcoded in a component and
   read as nonsense the moment a second world had a clock.
+- A commitment cannot be taken back, so a one-word alias for one only counts when it opens
+  the sentence. "Give Vane my word that no other NAME leaves this tent" was parsed as an
+  accusation and hanged him. Phrases ("name the forger") are specific enough anywhere.
+- A verb alias and an object name that are the same word means the verb wins and the object
+  cannot be touched: `order` the verb ate "the general's order" the document. Every
+  searchable thing in every world is looked at by a test, and the brief must never teach a
+  phrasing the parser hears as something else.
 - Nothing moves the player between locations, and the parser only offers what is in the
   one they are standing in. A discovery path through an object stowed somewhere else is
   not a path — the player is told "look at what?" as though they typed nonsense — so the

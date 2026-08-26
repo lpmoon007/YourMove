@@ -650,7 +650,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
     {
       id: 'standfast',
       label: 'Hold your story',
-      aliases: ['hold', 'stand fast', 'stick to my story', 'deny it', 'deny', 'hold the line', 'nothing more to say'],
+      aliases: ['stand fast', 'stick to my story', 'deny it', 'hold the line', 'hold my story', 'nothing more to say'],
       description: 'Say the statement is true, say you are done, and make them decide.',
       commitment_line:
         'You said the statement stands and that you were finished talking. Ruiz turned the tape off herself, which is not a thing you expected to feel like a verdict.',
@@ -667,7 +667,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
     {
       id: 'name',
       label: 'Give them a name',
-      aliases: ['name', 'give them a name', 'trade', 'give up', 'inform', 'flip', 'deal', 'offer them'],
+      aliases: ['give them a name', 'give them the name', 'trade him', 'give him up', 'inform', 'flip', 'take the deal'],
       description: 'Trade somebody else for yourself.',
       commitment_line:
         'You said a name into a running tape, and everyone in the room wrote it down at the same time. It cannot be unsaid, and by morning he will know who said it.',
