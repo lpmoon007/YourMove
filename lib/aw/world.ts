@@ -256,6 +256,7 @@ export class World {
       clock: st.clock,
       minutes_remaining: this.minutesRemaining,
       clock_label: this.pkg.world.clock_label,
+      example_action: this.pkg.world.example_actions[0] ?? '',
       location: loc ? { id: loc.id, name: loc.name, description: loc.description } : null,
       present: this.presentActors().map((id) => {
         const c = this.character(id)!;
@@ -275,6 +276,7 @@ export class World {
       flags_visible: Object.fromEntries(Object.entries(st.flags).filter(([k]) => !k.startsWith('_'))),
       documents: this.pkg.entities
         .filter((e) => e.kind === 'document' && e.location === this.playerLocation && st.objects[e.id] !== 'hidden')
+        .filter((e) => this.hasReadInto(e.id))
         .map((e) => ({ id: e.id, title: e.name, body: e.body ?? e.description })),
       known_facts: this.knowledge.factsFor(this.playerId).map(({ fact, record }) => ({
         id: fact,
@@ -286,6 +288,24 @@ export class World {
         .filter((v) => evalPred(v.chip_when, pctx))
         .map((v) => ({ id: v.id, label: v.label })),
     });
+  }
+
+  /** Whether the panel may print a document's contents. This projection is one of the
+   *  five that cannot leak truth, and it was leaking: every document standing in the
+   *  player's location had its full body printed from turn one, so the general's written
+   *  order — "expect a demonstration against a flank", the answer to the whole morning —
+   *  sat on screen beside a debrief that said "you never found this out". Two of seven
+   *  worlds gave an answer away this way.
+   *
+   *  A document is shown when the player has actually established what is in it, which is
+   *  the same bar the debrief scores against, so the two can no longer contradict each
+   *  other. Reading it and getting nothing is not enough — that is the contradiction one
+   *  turn later. A document nothing can be discovered through is scenery and always
+   *  shows: with no fact hanging off it there is nothing for it to give away. */
+  private hasReadInto(entityId: string): boolean {
+    const paths = this.pkg.discovery_paths.filter((p) => p.via_target?.includes(entityId));
+    if (!paths.length) return true; // scenery — it answers nothing, so it reveals nothing
+    return paths.some((p) => this.knowledge.get(this.playerId, p.fact).status !== 'unknown');
   }
 
   /** L6 is enforced HERE: the character's context is built from its knowledge alone. */

@@ -194,6 +194,10 @@ export interface UiProjection {
   minutes_remaining: number | null;
   /** What the clock is counting down to, in this world's words. */
   clock_label: string;
+  /** One sentence this world would actually accept, for the screens that have to show
+   *  the player what typing looks like. Hardcoding one put "ask the driver what he saw"
+   *  — The Last Job's cast — on the voice hint of a battlefield in 1809. */
+  example_action: string;
   location: { id: string; name: string; description: string } | null;
   present: { id: string; name: string; role: string; intro: string; disposition_read: string }[];
   resources: { id: string; label: string; amount: number }[];

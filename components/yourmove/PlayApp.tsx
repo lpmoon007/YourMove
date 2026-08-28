@@ -148,7 +148,7 @@ export function PlayApp({ initial }: { initial: RunView }) {
 
             {voice.supported && !run.ended ? (
               <p className="ym-meta ym-mic-note">
-                Say it the way you would say it to someone: “ask the driver what he saw”. The words land in the box
+                Say it the way you would say it to someone: “{ui.example_action}”. The words land in the box
                 and nothing happens until you send them. Your browser does the listening, and some browsers send the
                 audio to their own speech service to do it.
               </p>
@@ -212,12 +212,12 @@ export function PlayApp({ initial }: { initial: RunView }) {
               </ul>
             </section>
 
-            {ui.documents.length ? (
-              <section>
-                <h2>{ui.documents[0]!.title}</h2>
-                <pre className="ym-doc">{ui.documents[0]!.body}</pre>
+            {ui.documents.map((doc) => (
+              <section key={doc.id}>
+                <h2>{doc.title}</h2>
+                <pre className="ym-doc">{doc.body}</pre>
               </section>
-            ) : null}
+            ))}
 
             {!run.live_prose ? (
               <p className="ym-note">

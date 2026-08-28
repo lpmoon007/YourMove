@@ -138,6 +138,47 @@ test('nothing outside the registry reaches for a particular world', () => {
   assert.deepEqual(offenders, [], `these import one world directly instead of the registry:\n  ${offenders.join('\n  ')}`);
 });
 
+test('no screen speaks one world\'s words on another world\'s run', () => {
+  // The clock label was the first: "left before the van goes" was written into a component
+  // and read as nonsense the moment a second world had a clock. The voice hint was the
+  // second — "ask the driver what he saw" is The Last Job's cast, and it was sitting under
+  // the microphone on a ridge in 1809. Anything world-specific comes from the world.
+  // Names AND roles: the hint said "ask the driver what he saw", and "the driver" is how
+  // one world introduces a character it calls Dez. Checking names alone missed it.
+  // Names AND roles: the hint said "ask the driver what he saw", and "the driver" is how
+  // one world introduces a character it calls Dez. Checking names alone missed it.
+  const named = new Set<string>();
+  for (const pkg of WORLDS)
+    for (const c of pkg.cast) {
+      if (c.name.length > 3) named.add(c.name.toLowerCase());
+      const role = c.role.replace(/^(the|your|a|an)\s+/i, '').trim().toLowerCase();
+      if (role.length > 3) named.add(role);
+    }
+  assert.ok(named.size > 0, 'no cast was collected, so this check proves nothing');
+
+  const offenders: string[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (entry === 'node_modules' || entry === '.next') continue;
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!/\.tsx?$/.test(full)) continue;
+      const text = readFileSync(full, 'utf8').toLowerCase();
+      for (const name of named)
+        if (new RegExp(`\\b${name}\\b`).test(text)) offenders.push(`${full} says "${name}"`);
+    }
+  };
+  for (const dir of ['app', 'components']) walk(dir);
+  assert.deepEqual(
+    offenders,
+    [],
+    `a screen has one world's cast written into it, and every other world renders it:\n  ${offenders.join('\n  ')}`,
+  );
+});
+
 test('play evidence says which world it came from', async () => {
   // How You Play reads across worlds and reports a dimension no world tested as untested.
   // That only works if every piece of evidence carries the world it was read in.
@@ -401,6 +442,124 @@ test('the front door is never uniformly a wall', async () => {
       best >= 0.6,
       `${pkg.slug}: no opening move lands reliably — ${rates.map((r) => `${r.id} ${(r.rate * 100).toFixed(0)}%`).join(', ')}`,
     );
+  }
+});
+
+test('a seed is almost never a wall', async () => {
+  // The per-move check above passes while a SEED is a wall. The resolution draw used to
+  // be named for the turn index alone — `resolve:2` — so every possible action on a
+  // given turn shared one number, and on 40% of Late Edition's seeds every opening move
+  // AND every example action the brief teaches came back "nothing comes of it, and the
+  // minute is gone anyway". Nothing the player could have typed would have gone
+  // differently.
+  //
+  // Once the draw is named for the attempt, the moves fail independently, so a turn on
+  // which everything happens to miss is ordinary bad luck rather than a closed door —
+  // about one seed in a hundred rather than two in five. Measured on the SECOND move,
+  // where the turn-one floor below does not reach and a wall would still be a wall.
+  let walls = 0;
+  let seeds = 0;
+  const worst: string[] = [];
+  for (const pkg of WORLDS) {
+    const taught = [...(pkg.world.opening?.choices ?? []).map((c) => c.move), ...pkg.world.example_actions];
+    for (let i = 0; i < 16; i += 1) {
+      const seed = `${pkg.slug}-wall-${String(i).padStart(3, '0')}`;
+      seeds += 1;
+      let landed = 0;
+      for (const move of taught) {
+        const w = loadWorld(pkg, { run_id: `wall_${i}`, seed });
+        await takeTurn(w, 'wait');
+        const t = await takeTurn(w, move);
+        if (t.outcome === 'success' || t.outcome === 'partial') landed += 1;
+      }
+      if (landed === 0) {
+        walls += 1;
+        worst.push(`${pkg.slug}/${seed}`);
+      }
+    }
+  }
+  assert.ok(
+    walls / seeds <= 0.05,
+    `${walls} of ${seeds} seeds answer every sentence the brief teaches with nothing on one turn ` +
+      `(${((walls / seeds) * 100).toFixed(0)}%) — the resolution draw is shared, not per attempt: ${worst.join(', ')}`,
+  );
+});
+
+test('two different moves on one turn are two different attempts', async () => {
+  // The guard on the above: the draw is named for the attempt, not for the turn. If the
+  // key loses the verb and the target again, every action on a turn collapses back onto
+  // one number and the wall returns. Only moves the default resolver handled count — an
+  // override draws from its own stream, and counting one hid the collapse behind it.
+  const pkg = DEFAULT_WORLD;
+  const seed = 'draw-independence-001';
+  const draws = new Set<number>();
+  for (const move of [...pkg.world.example_actions, 'wait']) {
+    const w = loadWorld(pkg, { run_id: 'draws', seed });
+    const t = await takeTurn(w, move);
+    if (t.adjudication.stage3_rule_path?.startsWith('default:') && t.adjudication.seeded_draw !== null)
+      draws.add(t.adjudication.seeded_draw);
+  }
+  assert.ok(draws.size > 1, 'no two moves resolved through the default path drew different numbers');
+  assert.ok(
+    draws.size > 2,
+    `only ${draws.size} distinct draws across the moves the brief teaches — the resolution stream is named ` +
+      'for the turn, not the attempt, so everything on one turn shares a number',
+  );
+});
+
+test('turn one never comes back empty', async () => {
+  // Capability is at its floor on the first move: the player holds nothing and nobody
+  // trusts them yet, which made the front door the hardest turn in the game. About half
+  // of every world's own example actions answered the player's opening sentence with
+  // nothing at all. A first move still costs the minute and still only earns a partial.
+  for (const pkg of WORLDS) {
+    const taught = [...(pkg.world.opening?.choices ?? []).map((c) => c.move), ...pkg.world.example_actions];
+    for (let i = 0; i < 8; i += 1)
+      for (const move of taught) {
+        const w = loadWorld(pkg, { run_id: `first_${i}`, seed: `${pkg.slug}-first-${i}` });
+        const t = await takeTurn(w, move);
+        assert.notEqual(
+          t.outcome,
+          'failure',
+          `${pkg.slug}: "${move}" answers the opening handover with nothing on seed ${i}`,
+        );
+      }
+  }
+});
+
+test('the screen never prints an answer the player has not found', async () => {
+  // The document panel printed the body of every document standing in the player's
+  // location, from turn one. In The Last Hour that was the general's written order —
+  // "expect a demonstration against a flank", the answer to the whole morning — sitting
+  // in the sidebar beside a debrief that told the player they never found it out. Two of
+  // the seven worlds gave an answer away this way, and the projection that did it carries
+  // a comment promising it cannot leak truth.
+  const words = (text: string) =>
+    new Set(
+      text
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u)
+        .filter((w) => w.length > 4),
+    );
+
+  for (const pkg of WORLDS) {
+    const w = loadWorld(pkg, { run_id: 'leak', seed: `${pkg.slug}-leak-001` });
+    const ui = w.projectUi();
+    const onScreen = words(ui.documents.map((d) => `${d.title} ${d.body}`).join(' '));
+    const held = new Set(w.knowledge.factsFor(w.playerId).map(({ fact }) => fact));
+
+    for (const fact of pkg.facts) {
+      if (held.has(fact.id)) continue;
+      const value = w.truth.read(fact.id);
+      if (typeof value !== 'string') continue;
+      const valueWords = [...words(value)];
+      if (!valueWords.length) continue;
+      const overlap = valueWords.filter((word) => onScreen.has(word));
+      assert.ok(
+        overlap.length < Math.max(3, valueWords.length * 0.25),
+        `${pkg.slug}: the screen is printing "${fact.id}" (${overlap.join(' ')}) before the player has found it`,
+      );
+    }
   }
 });
 

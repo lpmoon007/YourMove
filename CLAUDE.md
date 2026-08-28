@@ -141,7 +141,10 @@ Nothing else in the product should have to change.
   validator rejects an example action that names nobody and nothing in its own world,
   because that is what a brief copied from another world looks like. The clock label was
   the one that got away — "left before the van goes" was hardcoded in a component and
-  read as nonsense the moment a second world had a clock.
+  read as nonsense the moment a second world had a clock. The voice hint was the second —
+  "ask the driver what he saw" is one world's cast, and it sat under the microphone on a
+  battlefield in 1809. A test now sweeps `app/` and `components/` for every world's cast
+  NAMES AND ROLES, because the first version checked names and "the driver" is a role.
 - A commitment cannot be taken back, so you commit by LEADING with it: the alias has to
   start within the first three words. "Give Vane my word that no other NAME leaves this
   tent" was parsed as an accusation and hanged him; "ask Salcedo about holding pressure for
@@ -229,6 +232,26 @@ Full detail in `docs/ENGINE.md`. The short version:
 - Nothing rewrites what a player said except in front of them. Dictation snaps a misheard
   name to someone in the room, but it does it in the composer, where the words can be read
   and changed before they are sent. The engine never silently retargets an action.
+- The resolution draw is named for the ATTEMPT, not for the turn. `resolve:1` gave every
+  possible first action the same number, so an unlucky seed failed whatever the player
+  typed: on 40% of one world's seeds, every opening move and every example action in the
+  brief came back "nothing comes of it" on turn one, and nothing the player could have
+  typed would have gone differently. Determinism is untouched — the same seed replaying
+  the same actions builds the same labels.
+- Turn one never comes back empty. Capability is at its floor on the first move — the
+  player holds nothing and nobody trusts them yet — which made the front door the hardest
+  turn in the game and answered about half of every world's own examples with nothing. A
+  first move still costs the minute and still only earns a partial.
+- A projection may never print an answer the player has not established. The document
+  panel published the body of every document in the player's location from turn one, so a
+  general's written order — the answer to the whole morning — sat in the sidebar beside a
+  debrief saying "you never found this out". A document shows once the player holds a fact
+  discoverable through it, which is the same bar the debrief scores against, so the two
+  cannot contradict each other. Having merely touched it is not enough: that is the same
+  contradiction one turn later.
+- Whether the player is going over ground they already hold is a fact about the world, not
+  about the draw. The world cannot fail to notice you are reading a document a second
+  time, so a bad roll withholds the reveals and nothing else.
 
 ## 9. Build and verify
 

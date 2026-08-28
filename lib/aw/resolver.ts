@@ -63,13 +63,30 @@ function resolveDefault(world: World, intent: Intent, cap: CapabilityVerdict): R
   const modifiers = -cap.uncertainty * 0.5 + (intent.secrecy === 'covert' ? -0.08 : 0);
 
   // --- the seeded draw (L11) ------------------------------------------------
-  const draw = world.rng.draw(`resolve:${world.counters.turns + 1}`);
+  // The stream is named for the ATTEMPT, not just for the turn. Keying it on the turn
+  // index alone gave every possible action on a given turn the same number, so an
+  // unlucky seed failed whatever the player typed: on 40% of Late Edition's seeds every
+  // opening move and every example action in the brief came back "nothing comes of it"
+  // on turn one. Determinism is untouched — the same seed replaying the same actions
+  // builds the same labels and draws the same numbers (L11).
+  const drawKey = `resolve:${world.counters.turns + 1}:${intent.verb}:${[...intent.targets].sort().join(',')}`;
+  const draw = world.rng.draw(drawKey);
   const margin = capability - opposition + modifiers + (draw - 0.5) * 0.5;
 
   let outcome: OutcomeClass;
   if (margin > 0.18) outcome = 'success';
   else if (margin > -0.02) outcome = 'partial';
   else outcome = 'failure';
+
+  // Turn one cannot come back empty. Capability is at its floor on the first move —
+  // the player holds nothing and nobody trusts them yet — so the front door was the
+  // hardest turn in the game, and about half of every world's own example actions
+  // answered the player's first sentence with "nothing comes of it, and the minute is
+  // gone anyway". That is the screen that reads as broken. A first move still costs the
+  // minute and still only earns a partial, so the world stays as unwilling as it was;
+  // it just never answers the opening handover with nothing at all. Backfire is left
+  // alone, because it is earned by a risk the player chose to take.
+  if (outcome === 'failure' && world.counters.turns === 0) outcome = 'partial';
 
   // Backfire is EARNED by risk, never by novelty (item 9). It needs a bad margin AND a
   // real risk factor: a covert move, a cold room, or an attempt made against the clock.
@@ -97,11 +114,13 @@ function resolveDefault(world: World, intent: Intent, cap: CapabilityVerdict): R
   }
 
   // Reveals become knowledge effects in item 10, where information propagation is decided.
-  const found =
-    outcome === 'failure' || outcome === 'backfire'
-      ? { reveals: [] as Resolution['reveals'], repeated: false }
-      : discoveries(world, intent, outcome);
-  const reveals = found.reveals;
+  // Whether the player is going back over ground they already hold is a fact about the
+  // world, not about the draw: the world cannot fail to notice you are reading a document
+  // for the second time, so a bad roll withholds the REVEALS and nothing else. Skipping
+  // the whole enquiry answered a re-read with "nothing comes of it, and the minute is
+  // gone anyway", which reads as the world having lost track of what it already told you.
+  const found = discoveries(world, intent, outcome);
+  const reveals = outcome === 'failure' || outcome === 'backfire' ? [] : found.reveals;
 
   return {
     outcome,
@@ -321,15 +340,13 @@ function defaultSummary(
   // Saying somebody "keeps the rest where you can see them holding it" when they had
   // nothing to give is the world inventing a withholding that never happened, and it
   // reads as the game being broken. What actually happened gets said instead.
+  if (!revealed && repeated) {
+    if (person) return `${t} says it again, the same way, and does not add anything to it.`;
+    if (intent.targets[0]) return `You go over ${t} again and it says exactly what it said the first time.`;
+  }
   if (!revealed && (outcome === 'success' || outcome === 'partial')) {
-    if (person)
-      return repeated
-        ? `${t} says it again, the same way, and does not add anything to it.`
-        : `${t} answers you, and there is nothing in it you did not already have.`;
-    if (intent.targets[0])
-      return repeated
-        ? `You go over ${t} again and it says exactly what it said the first time.`
-        : `You go through ${t} properly. There is nothing in it you did not already have.`;
+    if (person) return `${t} answers you, and there is nothing in it you did not already have.`;
+    if (intent.targets[0]) return `You go through ${t} properly. There is nothing in it you did not already have.`;
   }
 
   switch (outcome) {
