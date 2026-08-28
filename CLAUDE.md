@@ -182,7 +182,18 @@ Nothing else in the product should have to change.
   somebody can make on it. It is not a demo — whichever move gets picked is played here,
   by the engine, as turn one, so the moves live beside the verbs they use and the
   validator rejects one that names nothing in its own world. `/api/openings` serves them
-  so nothing on the front of the house keeps a copy that can drift.
+  so nothing on the front of the house keeps a copy that can drift, and
+  `public/embed/openings.js` is what reads it: the marketing site holds one script tag and
+  a container, and everything inside the container is rendered from the world files. Three
+  rounds of "here is the new block, paste it in" is what that replaced, and one taster sat
+  offering endings instead of openings for weeks, because a copy is nobody's job to
+  update. The embed keeps whatever markup is already in the container until the fetch
+  actually succeeds — a page blanked by a blip is worse than stale copy — and it takes the
+  link host from its own `src` rather than from the API, because the route builds those
+  links from a Host header and a preview deployment would otherwise capture them. The site
+  is not in this repo, so a renamed field here breaks a page nobody here is looking at: a
+  test reads the field names off the script itself, rather than restating them, and checks
+  the route still sends every one.
 - The previews are confident about what will happen and the world never is. That gap is
   the point of the handover, not a flaw in it — but no opening move may be a near-certain
   dead end, and a test plays each one across a dozen seeds to check.
@@ -277,6 +288,7 @@ lib/yourmove/      server actions, the session/account layer, and app-only glue
 app/, components/  the play interface and the facilitator console
 tests/aw/          the simulation harness
 supabase/          the schema (its own Supabase project)
+public/embed/      the taster embed the marketing site loads — one script tag, no copy
 ```
 
 Work on `claude/your-move-simulation-lto8uz`, then fast-forward `main`.

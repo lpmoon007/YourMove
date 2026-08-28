@@ -1,0 +1,79 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Your Move — taster embed</title>
+<style>
+  body { max-width: 62rem; margin: 0 auto; padding: 2.5rem 1.25rem 5rem;
+         font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+         color: #16181d; background: #fbfaf8; }
+  h1 { font-size: 1.6rem; margin: 0 0 .35rem; }
+  .lede { margin: 0 0 2.5rem; opacity: .7; }
+  h2 { font-size: 1.05rem; margin: 2.75rem 0 .75rem; }
+  pre { background: #14161a; color: #e8e6e1; padding: 1rem 1.1rem; border-radius: 10px;
+        overflow-x: auto; font-size: .85rem; line-height: 1.55; }
+  .demo { border: 1px dashed rgba(0,0,0,.2); border-radius: 12px; padding: 1.5rem; margin-top: 1rem; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid rgba(0,0,0,.1);
+           vertical-align: top; }
+  code { background: rgba(0,0,0,.06); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+</style>
+
+<h1>The taster, rendered from the world files</h1>
+<p class="lede">
+  Paste two things into the page. Everything after that comes from the app, so a new world
+  puts its own taster on the site and copy can never offer a move the engine will not take.
+</p>
+
+<h2>What goes on the marketing page</h2>
+<pre>&lt;div data-yourmove-openings&gt;
+  &lt;!-- Whatever the page says today. It stays put unless the fetch succeeds,
+       so an outage leaves the page reading exactly as it does now. --&gt;
+&lt;/div&gt;
+
+&lt;script src="https://YOUR-APP-HOST/embed/openings.js" defer&gt;&lt;/script&gt;</pre>
+
+<h2>Options</h2>
+<table>
+  <tr><th>Attribute</th><th>Does what</th></tr>
+  <tr><td><code>data-yourmove-openings="the-last-hour"</code></td>
+      <td>One world, or several comma-separated, in the order given. Omit the value for every world that has a taster.</td></tr>
+  <tr><td><code>data-yourmove-limit="3"</code></td><td>At most this many worlds.</td></tr>
+  <tr><td><code>data-yourmove-heading="h2"</code></td><td>Heading level for world titles, so it fits the page outline. Default <code>h3</code>.</td></tr>
+  <tr><td><code>data-yourmove-styles="off"</code></td><td>Bare markup, no injected CSS — style it with the site's own rules.</td></tr>
+</table>
+
+<h2>Styling</h2>
+<p>
+  It inherits font and color. Four custom properties are the quick way in, and every class
+  (<code>.ym-world</code>, <code>.ym-title</code>, <code>.ym-tagline</code>, <code>.ym-prompt</code>,
+  <code>.ym-choices</code>, <code>.ym-choice</code>, <code>.ym-label</code>, <code>.ym-preview</code>)
+  is a plain hook.
+</p>
+<pre>[data-yourmove-openings] {
+  --ym-border: rgba(0,0,0,.14);
+  --ym-accent: #b4472a;
+  --ym-radius: 10px;
+  --ym-gap: 1rem;
+}</pre>
+<p>
+  The container also carries <code>data-yourmove-state</code> —
+  <code>loading</code>, <code>ready</code>, <code>failed</code>, or <code>empty</code> — if you
+  want to fade the swap in or hide the fallback while it loads.
+</p>
+
+<h2>Every world with a taster</h2>
+<div class="demo">
+  <div data-yourmove-openings data-yourmove-heading="h3">
+    <p><em>This line is the fallback. If you can still read it, the fetch did not land.</em></p>
+  </div>
+</div>
+
+<h2>One world, by slug</h2>
+<div class="demo">
+  <div data-yourmove-openings="the-last-hour" data-yourmove-heading="h3">
+    <p><em>Fallback for the 1809 world.</em></p>
+  </div>
+</div>
+
+<script src="./openings.js" defer></script>
