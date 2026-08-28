@@ -75,6 +75,38 @@ export const LATE_EDITION: ScenarioPackage = {
       exposure: { label: 'People outside this room who know', holdings: { you: 0 } },
     },
     flags: { page_status: 'held' },
+
+    opening: {
+      prompt:
+        'Eleven at night, and you are the night editor of a city daily. Two hours ago a reporter brought in a ' +
+        'phone photograph of an internal memo: eleven days before a stairwell came down and killed two people, ' +
+        'the deputy mayor\'s office ordered the safety inspection rewritten. She wants it on the front page ' +
+        'under her own name. The paper\'s lawyer wants it killed and will not say why. The presses start in ' +
+        'forty minutes, and only one person in this room has ever spoken to the source.',
+      choices: [
+        {
+          id: 'checked',
+          label: 'Ask how she knows it is real',
+          preview:
+            'Your reporter says she matched the letterhead against another memo from the same department. That is a method, and a method can be wrong in a way that still matches.',
+          move: 'ask Nell how she checked the letterhead',
+        },
+        {
+          id: 'log',
+          label: 'Read the switchboard log',
+          preview:
+            'Every call into the night desk gets written down — the time, and where the operator says it came from. Somebody phoned this in tonight, and nobody has looked at the line it landed on.',
+          move: 'read the switchboard log',
+        },
+        {
+          id: 'source',
+          label: 'Ask where it came from',
+          preview:
+            'One person here has spoken to the source and nobody else has. You can ask her straight, for nothing, and take whatever answer she can afford to give you.',
+          move: 'ask Priya where the memo came from',
+        },
+      ],
+    },
   },
 
   locations: [
