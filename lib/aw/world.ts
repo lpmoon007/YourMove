@@ -297,15 +297,18 @@ export class World {
    *  sat on screen beside a debrief that said "you never found this out". Two of seven
    *  worlds gave an answer away this way.
    *
-   *  A document is shown when the player has actually established what is in it, which is
-   *  the same bar the debrief scores against, so the two can no longer contradict each
-   *  other. Reading it and getting nothing is not enough — that is the contradiction one
-   *  turn later. A document nothing can be discovered through is scenery and always
-   *  shows: with no fact hanging off it there is nothing for it to give away. */
+   *  A document is shown when the player has established EVERY fact discoverable through
+   *  it, which is the same bar the debrief scores against, so the two can no longer
+   *  contradict each other. Reading it and getting nothing is not enough — that is the
+   *  contradiction one turn later — and neither is holding one of the answers it states:
+   *  the morning returns carry the report's timing, the true reserve and the true
+   *  ammunition in one sheet, so asking the aide a question about timing would have
+   *  published the other two. A document nothing can be discovered through is scenery and
+   *  always shows: with no fact hanging off it there is nothing for it to give away. */
   private hasReadInto(entityId: string): boolean {
     const paths = this.pkg.discovery_paths.filter((p) => p.via_target?.includes(entityId));
     if (!paths.length) return true; // scenery — it answers nothing, so it reveals nothing
-    return paths.some((p) => this.knowledge.get(this.playerId, p.fact).status !== 'unknown');
+    return paths.every((p) => this.knowledge.get(this.playerId, p.fact).status !== 'unknown');
   }
 
   /** L6 is enforced HERE: the character's context is built from its knowledge alone. */

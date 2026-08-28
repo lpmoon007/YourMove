@@ -534,6 +534,11 @@ test('the screen never prints an answer the player has not found', async () => {
   // in the sidebar beside a debrief that told the player they never found it out. Two of
   // the seven worlds gave an answer away this way, and the projection that did it carries
   // a comment promising it cannot leak truth.
+  //
+  // Checked while PLAYING, not only at turn zero: the first version of this check looked
+  // at the opening screen alone and passed while asking the aide one question published a
+  // returns sheet whose pencil amendments answered two more questions the player had not
+  // asked.
   const words = (text: string) =>
     new Set(
       text
@@ -543,22 +548,32 @@ test('the screen never prints an answer the player has not found', async () => {
     );
 
   for (const pkg of WORLDS) {
-    const w = loadWorld(pkg, { run_id: 'leak', seed: `${pkg.slug}-leak-001` });
-    const ui = w.projectUi();
-    const onScreen = words(ui.documents.map((d) => `${d.title} ${d.body}`).join(' '));
-    const held = new Set(w.knowledge.factsFor(w.playerId).map(({ fact }) => fact));
+    const taught = [...(pkg.world.opening?.choices ?? []).map((c) => c.move), ...pkg.world.example_actions];
+    for (let i = 0; i < 4; i += 1) {
+      const w = loadWorld(pkg, { run_id: `leak_${i}`, seed: `${pkg.slug}-leak-${i}` });
+      for (const move of [...taught, 'wait']) {
+        if (w.ended) break;
+        await takeTurn(w, move);
 
-    for (const fact of pkg.facts) {
-      if (held.has(fact.id)) continue;
-      const value = w.truth.read(fact.id);
-      if (typeof value !== 'string') continue;
-      const valueWords = [...words(value)];
-      if (!valueWords.length) continue;
-      const overlap = valueWords.filter((word) => onScreen.has(word));
-      assert.ok(
-        overlap.length < Math.max(3, valueWords.length * 0.25),
-        `${pkg.slug}: the screen is printing "${fact.id}" (${overlap.join(' ')}) before the player has found it`,
-      );
+        const ui = w.projectUi();
+        const onScreen = words(ui.documents.map((d) => `${d.title} ${d.body}`).join(' '));
+        if (!onScreen.size) continue;
+        const held = new Set(w.knowledge.factsFor(w.playerId).map(({ fact }) => fact));
+
+        for (const fact of pkg.facts) {
+          if (held.has(fact.id)) continue;
+          const value = w.truth.read(fact.id);
+          if (typeof value !== 'string') continue;
+          const valueWords = [...words(value)];
+          if (!valueWords.length) continue;
+          const overlap = valueWords.filter((word) => onScreen.has(word));
+          assert.ok(
+            overlap.length < Math.max(3, valueWords.length * 0.25),
+            `${pkg.slug}: after "${move}" the screen prints "${fact.id}" (${overlap.join(' ')}) ` +
+              'before the player has found it',
+          );
+        }
+      }
     }
   }
 });

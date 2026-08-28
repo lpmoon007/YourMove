@@ -248,7 +248,10 @@ Full detail in `docs/ENGINE.md`. The short version:
   debrief saying "you never found this out". A document shows once the player holds a fact
   discoverable through it, which is the same bar the debrief scores against, so the two
   cannot contradict each other. Having merely touched it is not enough: that is the same
-  contradiction one turn later.
+  contradiction one turn later. Nor is holding ONE of the answers it states — a returns
+  sheet carrying the report's timing, the true reserve and the true ammunition publishes
+  all three, so asking the aide about timing unlocked the other two. A copy check that
+  only looks at the opening screen misses this: play the turns.
 - Whether the player is going over ground they already hold is a fact about the world, not
   about the draw. The world cannot fail to notice you are reading a document a second
   time, so a bad roll withholds the reveals and nothing else.
