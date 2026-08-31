@@ -68,15 +68,27 @@ export function deterministicParse(input: ParseInput): Intent {
     return at >= 0 && at <= 2;
   };
 
+  // WHERE the alias sits decides, and only then how long it is. Picking the longest match
+  // anywhere in the sentence let a word later in it beat the word the player led with: in
+  // the world about who made the call, "ask Marla about the call" picked `call` over `ask`
+  // — four letters against three — and dialed the phone instead of asking her. "ask Cyrus
+  // when the call went out" and "who made the call?" went the same way, and a taster's own
+  // "tell Ruiz ... I have nothing to add to it" was heard as `refuse`, which quietly spent
+  // one of three silences. A sentence's action is the verb it opens with; a verb further
+  // in is what the sentence is ABOUT. Length still breaks a tie at the same position, so
+  // "say to" beats "say".
   let verb: VerbDef | null = null;
+  let matchAt = Number.POSITIVE_INFINITY;
   let matchLen = 0;
   for (const v of input.vocabulary) {
     for (const alias of [v.id, ...v.aliases]) {
       const a = alias.toLowerCase().replace(/_/g, ' ');
-      if (a.length <= matchLen) continue;
-      if (!new RegExp(`(^|\\s)${escapeRe(a)}(\\s|$)`, 'i').test(low)) continue;
+      const at = startsAt(a);
+      if (at < 0) continue;
+      if (at > matchAt || (at === matchAt && a.length <= matchLen)) continue;
       if (!selectable(v, a)) continue;
       verb = v;
+      matchAt = at;
       matchLen = a.length;
     }
   }
@@ -117,10 +129,22 @@ export function deterministicParse(input: ParseInput): Intent {
     }
   }
 
-  if (!verb && question) {
+  // A sentence that OPENS as a question is a question, even when a verb alias turns up
+  // later in it. "who made the call?" is putting it to the room, not reaching for the
+  // phone, and the phone is what it got. The interrogative has to come FIRST: "ask Marla
+  // who called it in" opens with a verb and stays one.
+  const asksFirst = interrogativeAt(raw);
+  const leadsAsQuestion = asksFirst >= 0 && asksFirst < matchAt;
+
+  if ((!verb || leadsAsQuestion) && question) {
     const asking = input.vocabulary.find((v) => v.question_verb) ?? input.vocabulary.find((v) => v.speech && v.requires_target);
-    // Only when there is somebody to ask. A question aimed at nobody is still unclear.
+    // Only when there is somebody to ask. A question aimed at nobody is still unclear, and
+    // it is also how "how do I open the safe" keeps opening the safe.
     if (asking && targets.some((t) => input.surface.actors.some((a) => a.id === t))) verb = asking;
+    // Opens as a question, names nobody and nothing: "who made the call?" is not a decision
+    // to pick up the phone. Better to ask the player who they mean, in world, than to spend
+    // a turn and somebody's attention on a guess.
+    else if (leadsAsQuestion && !targets.length) verb = null;
   }
 
   let secrecy: Intent['secrecy'] = 'open';
@@ -170,6 +194,18 @@ function isQuestion(raw: string): boolean {
     .filter(Boolean)
     .slice(0, 3);
   return opening.some((w) => INTERROGATIVE.test(w));
+}
+
+/** Where the first interrogative sits, as a word index, or -1 if the sentence does not
+ *  open with one. Only the first three words count: a "who" deep in a sentence is part of
+ *  what is being asked about, not the asking. */
+function interrogativeAt(raw: string): number {
+  const opening = raw
+    .toLowerCase()
+    .split(/[^\p{L}']+/u)
+    .filter(Boolean)
+    .slice(0, 3);
+  return opening.findIndex((w) => INTERROGATIVE.test(w));
 }
 
 function extractGoal(raw: string): string | null {

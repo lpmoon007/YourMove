@@ -204,3 +204,46 @@ test('a commitment still works when it is what the player is actually saying', a
     }
   }
 });
+
+test('the verb you lead with beats a verb further in', async () => {
+  // Position decides, then length. Picking the longest alias anywhere in the sentence let
+  // `call` (four letters) beat `ask` (three) wherever the word "call" happened to appear —
+  // and in this world every interesting question is about a call.
+  for (const [move, expected] of [
+    ['ask Marla about the call', 'ask'],
+    ['ask Cyrus when the call went out', 'ask'],
+    ['ask Dez if he made the call', 'ask'],
+    ['read the call log', 'search'],
+    // ...and the verb still wins when the player really does lead with it.
+    ['call the fence', 'call'],
+    ['call the buyer from the payphone', 'call'],
+  ] as const) {
+    const w = fixture('last-job-001', `lead-${expected}-${move.length}`);
+    const turn = await takeTurn(w, move);
+    assert.equal(
+      turn.adjudication.intent?.verb,
+      expected,
+      `"${move}" was heard as ${turn.adjudication.intent?.verb}, not ${expected}`,
+    );
+  }
+});
+
+test('a sentence that opens as a question is a question', async () => {
+  // "who made the call?" is putting it to the room, not a decision to pick up the phone,
+  // and the phone is what it got. A question that names somebody goes to them; one that
+  // names nobody asks the player who they mean, in world, rather than guessing.
+  const named = fixture('last-job-001', 'q-named');
+  const asked = await takeTurn(named, 'Dez, who made the call?');
+  assert.equal(asked.adjudication.intent?.verb, 'ask', 'a question put to somebody in the room was not heard as one');
+
+  const vague = fixture('last-job-001', 'q-vague');
+  const turn = await takeTurn(vague, 'who made the call?');
+  assert.notEqual(turn.adjudication.intent?.verb, 'call', 'a bare question reached for the phone');
+  assert.equal(turn.outcome, 'clarify', 'a question naming nobody should ask who is meant, not guess');
+  assert.match(turn.narration, /who|what/i, `the clarification did not ask who was meant: ${turn.narration}`);
+
+  // A leading verb is not turned into a question by an interrogative later in it.
+  const led = fixture('last-job-001', 'q-led');
+  const still = await takeTurn(led, 'ask Marla who called it in');
+  assert.equal(still.adjudication.intent?.verb, 'ask');
+});

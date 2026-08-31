@@ -578,6 +578,35 @@ test('the screen never prints an answer the player has not found', async () => {
   }
 });
 
+test('a sentence the product teaches does what its first words say', async () => {
+  // "ask Marla who made the call" reached for the phone. The parser took the LONGEST alias
+  // anywhere in the sentence, so `call` beat `ask` on four letters against three, in the
+  // world whose whole subject is who made the call. The same thing had already shipped in
+  // a taster: "tell Ruiz the statement is accurate and I have nothing to add to it" was
+  // heard as `refuse` — a different act, that quietly spent one of three silences.
+  //
+  // Every sentence a brief or a taster teaches is checked against the verb it opens with,
+  // because those are the phrasings the product is putting in the player's mouth.
+  for (const pkg of WORLDS) {
+    const taught = [
+      ...(pkg.world.opening?.choices ?? []).map((c) => ({ where: `opening/${c.id}`, move: c.move })),
+      ...pkg.world.example_actions.map((move, i) => ({ where: `example/${i}`, move })),
+    ];
+    for (const { where, move } of taught) {
+      const w = loadWorld(pkg, { run_id: 'lead', seed: `${pkg.slug}-lead-001` });
+      const turn = await takeTurn(w, move);
+      const verb = pkg.verbs.find((v) => v.id === turn.adjudication.intent?.verb);
+      assert.ok(verb, `${pkg.slug} ${where}: "${move}" matched no verb at all`);
+      const low = move.toLowerCase();
+      assert.ok(
+        [verb.id, ...verb.aliases].some((a) => low.startsWith(a.toLowerCase())),
+        `${pkg.slug} ${where}: "${move}" is heard as ${verb.id}, which is not what it opens with — ` +
+          'a word later in the sentence captured it',
+      );
+    }
+  }
+});
+
 test('a failure says what actually failed', async () => {
   // "Marla does not give you that" is right when you asked her for something and wrong
   // when you told her where you stand. The world says which kind of verb it was: one that

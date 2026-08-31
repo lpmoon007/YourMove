@@ -84,6 +84,38 @@ export const LAST_JOB: ScenarioPackage = {
       heat: { label: 'Attention', holdings: { you: 0 } },
     },
     flags: { public_room: 'quiet' },
+
+    opening: {
+      prompt:
+        'Forty minutes ago you and three other people robbed the night safe of a jewelry wholesaler. Nobody ' +
+        'was hurt, nobody was caught, and no alarm went off. You are sitting out the hour in a hotel room one ' +
+        'of your own crew arranged, with forty thousand dollars in a bag on the bed and a van waiting ' +
+        'downstairs. Your driver says the gray sedan on the corner has been there since you got back, and ' +
+        'nobody outside these four people knew this room existed. The van leaves in nineteen minutes.',
+      choices: [
+        {
+          id: 'saw',
+          label: 'Ask what he actually saw',
+          preview:
+            'Your driver has had two fingers in that blind for four minutes and he is certain about what is parked down there. He is also the only one who has looked.',
+          move: 'ask Dez what he saw',
+        },
+        {
+          id: 'log',
+          label: 'Read the call log',
+          preview:
+            'Your inside woman pulled the front-desk printout on the way up and has not mentioned it since. Room numbers, times, durations — every call this hotel made tonight, including the one nobody is admitting to.',
+          move: 'read the call log',
+        },
+        {
+          id: 'who',
+          label: 'Ask who called it in',
+          preview:
+            'One of the three has watched this hotel\'s phones for years. You can put it to her straight, for nothing, and find out what a free answer is worth.',
+          move: 'ask Marla who called it in',
+        },
+      ],
+    },
   },
 
   locations: [

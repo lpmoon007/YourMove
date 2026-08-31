@@ -159,7 +159,11 @@ Nothing else in the product should have to change.
 - A verb alias and an object name that are the same word means the verb wins and the object
   cannot be touched: `order` the verb ate "the general's order" the document. Every
   searchable thing in every world is looked at by a test, and the brief must never teach a
-  phrasing the parser hears as something else.
+  phrasing the parser hears as something else. Every sentence a brief or a taster teaches is
+  played and checked against the verb it OPENS with, because that is the phrasing the
+  product is putting in the player's mouth: a taster's own "tell Ruiz the statement is
+  accurate and I have nothing to add to it" was heard as `refuse`, a different act that
+  quietly spent one of three silences, and it was live on the marketing site.
 - Nothing moves the player between locations, and the parser only offers what is in the
   one they are standing in. A discovery path through an object stowed somewhere else is
   not a path — the player is told "look at what?" as though they typed nonsense — so the
@@ -243,6 +247,17 @@ Full detail in `docs/ENGINE.md`. The short version:
 - Nothing rewrites what a player said except in front of them. Dictation snaps a misheard
   name to someone in the room, but it does it in the composer, where the words can be read
   and changed before they are sent. The engine never silently retargets an action.
+- The verb a player LEADS with beats a verb further into the sentence, and only then does a
+  longer alias win. Taking the longest alias anywhere let `call` beat `ask` on four letters
+  against three, in the world whose whole subject is who made the call: "ask Marla about the
+  call", "ask Cyrus when the call went out" and "ask Dez if he made the call" all reached for
+  the phone and spent the turn dialing. A sentence's action is the verb it opens with; a verb
+  further in is what the sentence is ABOUT.
+- A sentence that opens as a question is a question, whatever verb turns up later in it.
+  "who made the call?" is putting it to the room. One that names somebody goes to them; one
+  that names nobody and nothing asks the player who they mean, in world, rather than
+  guessing — but an interrogative only counts when it comes FIRST, so "ask Marla who called
+  it in" stays an instruction.
 - The resolution draw is named for the ATTEMPT, not for the turn. `resolve:1` gave every
   possible first action the same number, so an unlucky seed failed whatever the player
   typed: on 40% of one world's seeds, every opening move and every example action in the
