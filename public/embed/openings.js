@@ -21,6 +21,8 @@
  *
  * Options, all optional, as attributes on the container:
  *   data-yourmove-openings="the-last-hour"   one world, or several comma-separated
+ *   data-yourmove-category="War & Command"   every world on one shelf — this is what a tab
+ *                                            uses, so a new world joins its tab by itself
  *   data-yourmove-limit="3"                  at most this many worlds
  *   data-yourmove-heading="h2"               heading level to use for world titles
  *   data-yourmove-styles="off"               render bare markup and style it yourself
@@ -51,29 +53,34 @@
     }
   }
 
-  var SELECTOR = '[data-yourmove-openings]';
+  // A container may name worlds, or name a shelf, or neither (meaning all of them). A tab
+  // should be able to say only which shelf it is, without also listing what is on it.
+  var SELECTOR = '[data-yourmove-openings],[data-yourmove-category]';
+  // Styles are scoped to the containers this script has actually taken over, which is also
+  // why the fallback markup underneath is never restyled while it is still standing.
+  var SCOPE = '[data-yourmove-state]';
   var STYLE_ID = 'yourmove-openings-style';
 
   var CSS =
-    SELECTOR + '{--ym-gap:1rem;--ym-radius:10px;--ym-border:rgba(0,0,0,.14);' +
+    SCOPE + '{--ym-gap:1rem;--ym-radius:10px;--ym-border:rgba(0,0,0,.14);' +
     '--ym-muted:currentColor;--ym-accent:currentColor;font:inherit;color:inherit}' +
-    SELECTOR + ' .ym-world{margin:0 0 2.5rem}' +
-    SELECTOR + ' .ym-title{margin:0 0 .25rem;font-size:1.25em;line-height:1.2}' +
-    SELECTOR + ' .ym-tagline{margin:0 0 .9rem;opacity:.72;font-size:.95em}' +
-    SELECTOR + ' .ym-prompt{margin:0 0 1.1rem;line-height:1.55}' +
-    SELECTOR + ' .ym-choices{list-style:none;margin:0;padding:0;display:grid;gap:var(--ym-gap);' +
+    SCOPE + ' .ym-world{margin:0 0 2.5rem}' +
+    SCOPE + ' .ym-title{margin:0 0 .25rem;font-size:1.25em;line-height:1.2}' +
+    SCOPE + ' .ym-tagline{margin:0 0 .9rem;opacity:.72;font-size:.95em}' +
+    SCOPE + ' .ym-prompt{margin:0 0 1.1rem;line-height:1.55}' +
+    SCOPE + ' .ym-choices{list-style:none;margin:0;padding:0;display:grid;gap:var(--ym-gap);' +
     'grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}' +
-    SELECTOR + ' .ym-choice{margin:0}' +
-    SELECTOR + ' .ym-choice a{display:flex;flex-direction:column;gap:.5rem;height:100%;' +
+    SCOPE + ' .ym-choice{margin:0}' +
+    SCOPE + ' .ym-choice a{display:flex;flex-direction:column;gap:.5rem;height:100%;' +
     'padding:1rem 1.1rem;border:1px solid var(--ym-border);border-radius:var(--ym-radius);' +
     'text-decoration:none;color:inherit;background:transparent;transition:border-color .15s,transform .15s}' +
-    SELECTOR + ' .ym-choice a:hover,' + SELECTOR + ' .ym-choice a:focus-visible{' +
+    SCOPE + ' .ym-choice a:hover,' + SCOPE + ' .ym-choice a:focus-visible{' +
     'border-color:var(--ym-accent);transform:translateY(-1px)}' +
-    SELECTOR + ' .ym-label{font-weight:600;line-height:1.3}' +
-    SELECTOR + ' .ym-preview{margin:0;font-size:.92em;line-height:1.5;opacity:.78}' +
-    SELECTOR + ' .ym-minutes{margin:.8rem 0 0;font-size:.85em;opacity:.6}' +
-    '@media (prefers-reduced-motion:reduce){' + SELECTOR + ' .ym-choice a{transition:none}' +
-    SELECTOR + ' .ym-choice a:hover{transform:none}}';
+    SCOPE + ' .ym-label{font-weight:600;line-height:1.3}' +
+    SCOPE + ' .ym-preview{margin:0;font-size:.92em;line-height:1.5;opacity:.78}' +
+    SCOPE + ' .ym-minutes{margin:.8rem 0 0;font-size:.85em;opacity:.6}' +
+    '@media (prefers-reduced-motion:reduce){' + SCOPE + ' .ym-choice a{transition:none}' +
+    SCOPE + ' .ym-choice a:hover{transform:none}}';
 
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -141,10 +148,15 @@
 
   function render(container, openings) {
     var only = wantedWorlds(container);
+    var shelf = (container.getAttribute('data-yourmove-category') || '').trim();
     var limit = parseInt(container.getAttribute('data-yourmove-limit') || '', 10);
 
     var chosen = openings.filter(function (w) {
-      return !only || only.indexOf(w.world) !== -1;
+      if (only && only.indexOf(w.world) === -1) return false;
+      // A tab asks for a shelf, not for a list of worlds, so a world added to that shelf
+      // appears under it without anybody editing the page.
+      if (shelf && String(w.category || '').toLowerCase() !== shelf.toLowerCase()) return false;
+      return true;
     });
     if (only)
       chosen.sort(function (a, b) { return only.indexOf(a.world) - only.indexOf(b.world); });

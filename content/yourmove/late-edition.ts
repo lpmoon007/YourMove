@@ -21,6 +21,7 @@ export const LATE_EDITION: ScenarioPackage = {
   tagline: 'Forty minutes to press. One photograph. Print it wrong and there is no paper on Monday.',
   format: 'F1',
   genre: 'Newsroom — the forty minutes before a front page is decided. One office, three colleagues, a deadline.',
+  category: 'Press & Exposure',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 

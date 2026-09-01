@@ -22,6 +22,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
   tagline: 'A photograph of you where you swore you were not. Thirty minutes to decide what you say.',
   format: 'F1',
   genre: 'Crime — an interview room in 1986. One photograph, three people, and the story you already told under oath.',
+  category: 'Crime & Underworld',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 

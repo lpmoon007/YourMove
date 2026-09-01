@@ -182,6 +182,14 @@ Nothing else in the product should have to change.
   from its own cast, its own objects and its own examples.
 - The front door is that world's brief when there is one world and a lobby when there are
   several. Neither is a special case: the list decides.
+- Which shelf a world is offered on is a field ON the world, from the closed `CATEGORIES`
+  set, so the compiler picks it rather than a page somewhere. The marketing site kept its
+  own grouping, which meant a new world was invisible on it until somebody remembered to
+  file one — and The Late Edition, a newsroom, fit none of the three labels for months.
+  A tab now names a shelf and nothing else, so a world joins its tab by existing. Two
+  worlds meaning the same shelf must say it the same way or the grouping silently splits,
+  and a shelf nothing is filed under is a tab that opens onto an empty page: a test fails
+  the build on either.
 - A world may carry an `opening`: the 90-second version of itself, and two or three moves
   somebody can make on it. It is not a demo — whichever move gets picked is played here,
   by the engine, as turn one, so the moves live beside the verbs they use and the

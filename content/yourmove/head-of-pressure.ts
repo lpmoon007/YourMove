@@ -23,6 +23,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
   tagline: 'Fifteen minutes, one valve, two districts. Everything you know came through people.',
   format: 'F1',
   genre: 'Collapse, 2028 — a water district control room on the third day without a grid. One room, three people, fifteen minutes.',
+  category: 'Survival & Collapse',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 

@@ -22,6 +22,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
   tagline: 'A letter naming a spy, in a hand you are certain you know. The finding is due at dawn.',
   format: 'F1',
   genre: 'War, 1777 — a night court-martial in a Continental Army camp. One tent, four men, and a hanging at dawn.',
+  category: 'War & Command',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 

@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     world: w.slug,
     title: w.title,
     genre: w.genre,
+    category: w.category,
     tagline: w.tagline,
     estimated_minutes: w.content_descriptors.estimated_minutes,
     prompt: w.world.opening!.prompt,

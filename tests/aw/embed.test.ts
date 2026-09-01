@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
 import { GET } from '@/app/api/openings/route';
+import { CATEGORIES } from '@/lib/aw/package';
 import { WORLDS } from '@/content/yourmove';
 
 const EMBED = 'public/embed/openings.js';
@@ -27,6 +28,7 @@ async function payload(origin = 'https://app.example') {
       tagline: string;
       prompt: string;
       estimated_minutes: number;
+      category: string;
       choices: { id: string; label: string; preview: string; enter: string }[];
     }[];
   };
@@ -114,4 +116,34 @@ test('a document served to strangers says nothing about how to reach the console
   const text = JSON.stringify(openings).toLowerCase();
   for (const word of ['secret', 'service_role', 'supabase', 'console?key'])
     assert.ok(!text.includes(word), `the public taster payload mentions ${word}`);
+});
+
+test('every shelf on offer has something on it', () => {
+  // The site used to keep its own grouping, so a world was invisible until somebody
+  // remembered to file it — and The Late Edition fit none of the three labels for months.
+  // The shelf is a field on the world now, from a closed set, which moves the failure here:
+  // a shelf nobody is on is a tab that opens onto nothing.
+  for (const category of CATEGORIES) {
+    const on = WORLDS.filter((w) => w.category === category);
+    assert.ok(on.length > 0, `nothing is filed under "${category}" — that tab would open onto an empty page`);
+  }
+  for (const w of WORLDS)
+    assert.ok(
+      (CATEGORIES as readonly string[]).includes(w.category),
+      `${w.slug} is filed under "${w.category}", which is not a shelf anything else is on`,
+    );
+});
+
+test('a tab can ask for a shelf without naming the worlds on it', async () => {
+  const { openings } = await payload();
+  const source = readFileSync(EMBED, 'utf8');
+  assert.ok(
+    /data-yourmove-category/.test(source),
+    'the embed cannot filter by shelf, so a tab has to list its worlds by hand again',
+  );
+  for (const world of openings)
+    assert.ok(
+      (CATEGORIES as readonly string[]).includes(world.category),
+      `the API sends ${world.world} on shelf "${world.category}", which the embed will never match`,
+    );
 });

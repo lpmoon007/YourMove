@@ -22,6 +22,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
   tagline: 'Three weeks out of Nassau, unpaid, and the vote is at nightfall. You have until dark.',
   format: 'F1',
   genre: 'Sea, 1721 — a pirate ship a few hours from a vote on whether to keep you. One deck, three men, and dark coming.',
+  category: 'War & Command',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 

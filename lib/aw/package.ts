@@ -228,6 +228,17 @@ export interface ContentDescriptors {
   estimated_minutes: number;
 }
 
+/** The shelves worlds are offered on. A closed set on purpose — two worlds that mean the
+ *  same shelf must say it the same way, or the grouping quietly splits in two. */
+export const CATEGORIES = [
+  'Crime & Underworld',
+  'War & Command',
+  'Press & Exposure',
+  'Survival & Collapse',
+] as const;
+
+export type Category = (typeof CATEGORIES)[number];
+
 export interface ScenarioPackage {
   id: string;
   slug: string;
@@ -237,6 +248,12 @@ export interface ScenarioPackage {
   /** Plain genre label, shown before anything else. A player deciding whether to press
    *  Play should never have to infer what kind of thing this is. */
   genre: string;
+  /** Which shelf this world sits on where several are offered together. One of a closed
+   *  set, so the compiler decides it rather than a page somewhere: the front of the house
+   *  used to hold its own grouping, which meant a new world was invisible until somebody
+   *  remembered to file it, and one world fit none of the three labels on offer for
+   *  months. Adding a shelf is a deliberate edit to CATEGORIES, not a typo in a string. */
+  category: Category;
   schema_version: string;
   content_version: string;
   world: {
@@ -385,6 +402,11 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   if (!p.world.player.objective?.trim()) err('no_objective', 'world.player.objective is required — the player must know what they want');
   if (!p.world.player.pressure?.trim()) err('no_pressure', 'world.player.pressure is required — the cold open needs one immediate pressure');
   if (!p.genre?.trim()) err('no_genre', 'genre is required — a player should never have to guess what kind of thing this is');
+  if (!CATEGORIES.includes(p.category))
+    err(
+      'bad_category',
+      `category must be one of ${CATEGORIES.join(', ')} — a world on a shelf of its own is a shelf nobody browses`,
+    );
   if (!p.world.setup?.trim()) err('no_setup', 'world.setup is required — what already happened is stated plainly, never inferred');
   if (!p.world.trouble?.trim()) err('no_trouble', 'world.trouble is required — say why this is a scene');
   for (const l of p.locations)

@@ -22,6 +22,7 @@ export const THE_LAST_HOUR: ScenarioPackage = {
   tagline: 'The general is dead, the left is folding, and everything you know arrived on a horse.',
   format: 'F1',
   genre: 'War, 1809 — a command post at dawn, twenty-five minutes after the general was killed. One knoll, three officers, one decision.',
+  category: 'War & Command',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 

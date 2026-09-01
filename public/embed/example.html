@@ -38,6 +38,8 @@
   <tr><th>Attribute</th><th>Does what</th></tr>
   <tr><td><code>data-yourmove-openings="the-last-hour"</code></td>
       <td>One world, or several comma-separated, in the order given. Omit the value for every world that has a taster.</td></tr>
+  <tr><td><code>data-yourmove-category="War &amp; Command"</code></td>
+      <td>Every world on one shelf. This is what a genre tab uses: a new world filed under that shelf appears there by itself, with no change to the page.</td></tr>
   <tr><td><code>data-yourmove-limit="3"</code></td><td>At most this many worlds.</td></tr>
   <tr><td><code>data-yourmove-heading="h2"</code></td><td>Heading level for world titles, so it fits the page outline. Default <code>h3</code>.</td></tr>
   <tr><td><code>data-yourmove-styles="off"</code></td><td>Bare markup, no injected CSS — style it with the site's own rules.</td></tr>
@@ -73,6 +75,17 @@
 <div class="demo">
   <div data-yourmove-openings="the-last-hour" data-yourmove-heading="h3">
     <p><em>Fallback for the 1809 world.</em></p>
+  </div>
+</div>
+
+<h2>One shelf — this is a genre tab</h2>
+<p>
+  The container names the shelf and nothing else, so whatever is filed under it turns up here.
+  A container may name a shelf, name worlds, or neither, which means all of them.
+</p>
+<div class="demo">
+  <div data-yourmove-category="War &amp; Command" data-yourmove-heading="h3">
+    <p><em>Fallback for the War &amp; Command tab.</em></p>
   </div>
 </div>
 

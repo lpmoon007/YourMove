@@ -23,6 +23,7 @@ export const LAST_JOB: ScenarioPackage = {
   tagline: 'Nineteen minutes. Three people. One of them called it in — probably.',
   format: 'F1',
   genre: 'Crime — the hour after a robbery. One room, three suspects, a clock.',
+  category: 'Crime & Underworld',
   schema_version: SCHEMA_VERSION,
   content_version: '1.0.0',
 
