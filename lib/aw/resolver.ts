@@ -182,7 +182,11 @@ function discoveries(
 
     const d = p.disclosure ?? { status: 'told' as KnowledgeStatus, value: '@holder_belief' };
     const named = p.via_target ? intent.targets.find((t) => p.via_target!.includes(t)) : null;
-    const source = d.source ?? named ?? target ?? 'observation';
+    // The source is the PERSON this path routes through, or nobody. A thing is never a
+    // source (reading it is an observation), and neither is whoever the player happened to
+    // be addressing — a path with no via_target is the player working it out, not somebody
+    // telling them. Falling back to the turn's target made L6 reject the write, silently.
+    const source = d.source ?? (named && world.character(named) ? named : 'observation');
     const value = resolveDisclosureValue(world, p, source);
     if (value === null) continue; // the source does not actually hold it — nothing to give
 
@@ -334,8 +338,17 @@ function defaultSummary(
   revealed: number,
   repeated: boolean,
 ): string {
-  const t = intent.targets[0] ? world.displayName(intent.targets[0]!) : 'the room';
-  const person = Boolean(intent.targets[0] && world.character(intent.targets[0]!));
+  // A verb that acts on things describes the thing, even when a person is named in
+  // passing. "look at Rook's phone" names Rook, and the world said "Rook gives you part of
+  // it" about a handset lying face down on a ledge — which reads as him handing it over,
+  // the opposite of what the player did.
+  const verbDef = world.pkg.verbs.find((v) => v.id === intent.verb);
+  const subject =
+    (verbDef?.object_verb ? intent.targets.find((id) => !world.character(id)) : null) ??
+    intent.targets[0] ??
+    null;
+  const t = subject ? world.displayName(subject) : 'the room';
+  const person = Boolean(subject && world.character(subject));
 
   // Saying somebody "keeps the rest where you can see them holding it" when they had
   // nothing to give is the world inventing a withholding that never happened, and it

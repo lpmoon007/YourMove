@@ -243,7 +243,7 @@ export const LATE_EDITION: ScenarioPackage = {
         'photograph twice and taken no notes.',
       leverage: 'He can stop the presses on his own authority, and he is the only one here who has read the paper\'s insurance.',
       starting_disposition: { trust: 0, fear: 10 },
-      knows: ['letterhead', 'lawyer_client', 'reporter_tie'],
+      knows: ['letterhead', 'lawyer_client', 'reporter_tie', 'call_origin'],
       fallback_lines: {
         default: 'As it stands, I would not put my name near it. That is not the same as saying it is false.',
         pressed: 'You can raise your voice. It does not change what a jury does with an unnamed source.',
@@ -570,6 +570,9 @@ export const LATE_EDITION: ScenarioPackage = {
     },
     // The lawyer saw it and has not said so, because saying so helps him either way.
     { actor: 'arthur', fact: 'letterhead', status: 'observed', value: '@canonical', confidence: 0.9 },
+    // He read the switchboard log while everybody else was arguing, which is what the
+    // rescue has him say. Without this he cannot say it: L6 rejects the write in silence.
+    { actor: 'arthur', fact: 'call_origin', status: 'observed', value: '@canonical', confidence: 0.9 },
     // The deputy knows exactly where it came from.
     { actor: 'priya', fact: 'memo_origin', status: 'observed', value: '@canonical', confidence: 1 },
     { actor: 'priya', fact: 'call_origin', status: 'observed', value: '@canonical', confidence: 0.9 },

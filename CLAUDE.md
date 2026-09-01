@@ -150,6 +150,19 @@ Nothing else in the product should have to change.
   tent" was parsed as an accusation and hanged him; "ask Salcedo about holding pressure for
   Eastgate" is a question, not a decision. A verb's own label must be typeable, and a test
   types every one of them.
+- A disclosure's source is the PERSON the path routes through, or nobody. Falling back to
+  whoever the player happened to be addressing made L6 reject the write — silently — so
+  The Late Edition's central deduction did nothing unless the person being pressed happened
+  to be the one who knew, and reading a document named the document as a discloser. A thing
+  is never a source; reading it is an observation.
+- A character can only be made to say what is in their knowledge state, and an authored
+  beat that forgets this is dead on arrival: the line prints, the write is rejected, the
+  player learns nothing. THREE of the nine worlds shipped a Director rescue — the safety
+  net for a stuck player — that had never once worked. The validator checks every inject,
+  override and process effect against the discloser's own knowledge now, because it is a
+  static question and does not need to be discovered in play.
+- Moving somebody faster than the map allows is rejected the same way, and rejection takes
+  the whole write with it, so the person simply never goes. Checked statically too.
 - An invariant that fires is a bug, and it fails silently: the write is rejected, the
   narration prints anyway, and an authored beat stops happening. One nonsense `forbidden`
   rule made a character's whole confession unreachable and nothing said so. Every world is

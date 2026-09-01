@@ -943,7 +943,10 @@ export const THE_LAST_HOUR: ScenarioPackage = {
       trigger: { when: { all: [{ flag: 'cornered', eq: true }, { clock: { gte: 16 } }] } },
       once: true,
       effects: [
-        { kind: 'clock', minutes: 1 },
+        // Two, because that is what the map says it takes to get down to the guns. One
+        // made the temporal invariant reject the whole write, so the line printed and the
+        // aide never actually left the knoll.
+        { kind: 'clock', minutes: 2 },
         { kind: 'position', entity: 'fenwick', location: 'battery' },
       ],
       line: 'Fenwick asks to be sent back down, and is, and takes his horse with him at a walk this time.',

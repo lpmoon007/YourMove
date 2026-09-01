@@ -252,7 +252,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
         'saw anything at all three days ago.',
       leverage: 'He is the only witness to the sighting the whole argument rests on, and he keeps the chart it is marked on.',
       starting_disposition: { trust: 35, fear: 15 },
-      knows: ['frigate_truth', 'convoy_position'],
+      knows: ['frigate_truth', 'convoy_position', 'real_count'],
       fallback_lines: {
         default: 'I know what I saw. Eleven leagues, topsails only, ship-rigged.',
         pressed: 'You may ask me a fourth time and I will give you the same bearing.',

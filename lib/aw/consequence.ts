@@ -50,7 +50,15 @@ export function applyResolution(
   for (const r of resolution.reveals) {
     const path = world.pkg.discovery_paths.find((p) => p.id === r.via);
     const d = path?.disclosure;
-    const source = d?.source ?? target ?? 'observation';
+    // The source is the PERSON the path routes through, or nobody. Whoever the player
+    // happened to be addressing is not automatically the one who told them: an override
+    // that fires on `press` against anybody in the room, revealing a fact worked out from
+    // two others, named the person being pressed as the source — and L6 rejected the write
+    // because they did not know it. Silently. The triumphant paragraph printed anyway and
+    // the deduction at the centre of that world simply did not happen unless the person
+    // being pressed happened to be the one who knew.
+    const routed = path?.via_target?.find((id) => intent.targets.includes(id)) ?? null;
+    const source = d?.source ?? (routed && world.character(routed) ? routed : 'observation');
     const value = path ? resolveDisclosureValue(world, path, source) : (world.truth.read(r.fact) ?? null);
     const fidelity = d?.fidelity ?? (r.status === 'observed' ? 1 : 0.8);
     const distortion = d?.distortion ?? null;

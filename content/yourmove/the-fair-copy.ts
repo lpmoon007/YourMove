@@ -219,7 +219,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
         'carried the letter up here himself rather than sending it.',
       leverage: 'He is the only man who saw where the courier came from, and the pass in his pocket is the only paper that says otherwise.',
       starting_disposition: { trust: 30, fear: 20 },
-      knows: ['courier_route', 'guard_hour'],
+      knows: ['courier_route', 'guard_hour', 'general_order'],
       fallback_lines: {
         default: 'I saw what I saw, sir, and I wrote the hour down at the time.',
         pressed: 'You may ask me again and I will give you the same answer, because it is the same answer.',

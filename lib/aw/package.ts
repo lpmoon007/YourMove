@@ -497,6 +497,57 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   }
   if (p.overrides.length > p.verbs.length * 3)
     warn('override_sprawl', 'overrides outnumber verbs 3:1 — L5: authored rules constrain resolution, they do not enumerate it');
+  // A knowledge effect names who it came from. If that person does not hold the fact, L6
+  // rejects the write at run time and the authored line prints anyway — which is how The
+  // Late Edition's Director rescue, the safety net for a stuck player, never once worked.
+  // Statically checkable, so it is checked here rather than discovered in play.
+  const holderKnows = (actor: string, fact: string): boolean =>
+    p.cast.some((c) => c.id === actor && c.knows.includes(fact)) ||
+    p.holds.some((h) => h.actor === actor && h.fact === fact);
+  const discloserIds = new Set(p.cast.map((c) => c.id));
+  const authoredEffects = [
+    ...p.injects.map((i) => [`inject ${i.id}`, i.effects] as const),
+    ...p.overrides.map((o) => [`override ${o.id}`, o.effects ?? []] as const),
+    ...p.processes.map((w) => [`process ${w.id}`, w.effects ?? []] as const),
+  ];
+
+  // Moving somebody faster than the map allows is rejected by the temporal invariant, and
+  // rejection takes the WHOLE write with it — so the authored line prints and the person
+  // never actually goes anywhere. One aide walked down to the guns in one minute on a
+  // two-minute path and stayed on the knoll for the rest of the game.
+  for (const [where, effects] of authoredEffects) {
+    const move = effects.find((e) => e.kind === 'position') as { entity?: string; location?: string } | undefined;
+    if (!move?.entity || !move.location) continue;
+    const from = p.cast.find((c) => c.id === move.entity)?.start_location;
+    if (!from) continue;
+    const need = p.locations.find((l) => l.id === from)?.travel_minutes?.[move.location] ?? 0;
+    const given = effects.reduce((n, e) => n + (e.kind === 'clock' ? (e.minutes ?? 0) : 0), 0);
+    if (given < need)
+      err(
+        'move_too_fast',
+        `${where} moves ${move.entity} from ${from} to ${move.location} in ${given}m, and the map says ${need}m — ` +
+          'the whole write is rejected and the line prints anyway',
+      );
+  }
+
+  for (const [where, effects] of [
+    ...p.injects.map((i) => [`inject ${i.id}`, i.effects] as const),
+    ...p.overrides.map((o) => [`override ${o.id}`, o.effects ?? []] as const),
+    ...p.processes.map((w) => [`process ${w.id}`, w.effects ?? []] as const),
+  ]) {
+    for (const e of effects) {
+      if (e.kind !== 'knowledge') continue;
+      const src = (e as { source?: string }).source;
+      if (!src || !discloserIds.has(src)) continue;
+      if (!holderKnows(src, e.fact))
+        err(
+          'source_cannot_disclose',
+          `${where} has ${src} disclose ${e.fact}, which is not in their knowledge state — ` +
+            'the write is rejected at run time and the line prints anyway (L6)',
+        );
+    }
+  }
+
   for (const i of p.injects) {
     if (!knownActor(i.actor)) err('bad_inject_actor', `inject ${i.id} acts as unknown actor ${i.actor}`);
     if (!i.when) err('unguarded_inject', `inject ${i.id} has no preconditions — it could fire in an incoherent state`);

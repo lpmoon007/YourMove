@@ -572,10 +572,19 @@ test('the screen never prints an answer the player has not found', async () => {
             const valueWords = [...words(value)];
             if (!valueWords.length) continue;
             const overlap = valueWords.filter((word) => onScreen.has(word));
+            // Three words AND two fifths of the value. Measured, not guessed: with the
+            // gate removed, every real leak in the nine worlds scores 43%–80%, and the one
+            // case that is a document stating the CONTRADICTING value — a plan promising
+            // forty minutes where the truth is twenty-two — scores 38%, because "minutes",
+            // "forty" and "night" are words both sentences happen to use. A document that
+            // gives an answer away restates it; a document that is wrong shares vocabulary.
+            // If a future world lands in that gap, re-measure rather than move the number.
+            const leaked = overlap.length >= 3 && overlap.length / valueWords.length >= 0.4;
             assert.ok(
-              overlap.length < Math.max(3, valueWords.length * 0.25),
+              !leaked,
               `${pkg.slug}: after "${move}" the panel showing "${doc.title}" prints "${fact.id}" ` +
-                `(${overlap.join(' ')}) before the player has found it`,
+                `(${overlap.join(' ')} — ${Math.round((overlap.length / valueWords.length) * 100)}% of it) ` +
+                'before the player has found it',
             );
           }
         }
@@ -714,8 +723,12 @@ test("a world's own invariants never fire in ordinary play", async () => {
     const moves = corpusFor(pkg);
     for (const [i, move] of moves.entries()) {
       const w = loadWorld(pkg, { run_id: `inv_${pkg.slug}_${i}`, seed: `${pkg.slug}-001` });
-      // A few turns, so state has actually accumulated when the later ones land.
-      for (const m of [...moves.slice(0, 3), move]) {
+      // The whole corpus before this move, not three of it. A silent rejection needs
+      // accumulated state to reach: naming a document as a disclosure source only trips
+      // L6 once the player holds enough for an override to fire on an object-verb turn,
+      // and three moves never got there. The narration prints either way, so nothing but
+      // this check would have said so.
+      for (const m of [...moves.slice(0, i), move]) {
         const t = await takeTurn(w, m);
         if (t.ended) break;
       }
