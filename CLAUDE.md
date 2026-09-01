@@ -173,6 +173,12 @@ Nothing else in the product should have to change.
   a failed one. When the matched branch is the bad ending, a triumphant paragraph gets
   filed as a failure. Use two overrides told apart by a `truth` predicate instead, each
   with its own explicit outcome.
+- A band label is read against every scoring rule that can reach it, not just the one it was
+  written for. Withdrawing a story correctly scored two points on the axis asking what was
+  left of what the paper printed, and two points on that axis is labelled "standing on less
+  than you thought" — so the debrief told a player their story was standing on the screen
+  where they had just taken it back. An axis answers its own question honestly; whether the
+  call was a good one is what the other axes are for.
 - Score the deciding fact on the value being RIGHT (`knows: { correct: true }`), never on
   how firmly it is held. A disclosure authored as first-hand is downgraded to hearsay when
   the turn it arrives on only partly succeeds, so scoring on status told a player "you
