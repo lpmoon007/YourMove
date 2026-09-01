@@ -161,6 +161,18 @@ Nothing else in the product should have to change.
   net for a stuck player — that had never once worked. The validator checks every inject,
   override and process effect against the discloser's own knowledge now, because it is a
   static question and does not need to be discovered in play.
+- A two-branch override has to READ as two branches. One shipped with `summary` and
+  `summary_else` byte-identical, so killing a forgery and killing a true story printed the
+  same paragraph and the only difference was an outcome label the player never sees. The
+  flags branched correctly the whole time, which is why nothing else noticed. Checked now,
+  along with a condition on a flag nothing in the world ever sets.
+- Content that never fires is invisible to every test a live world passes. `npm run audit:aw`
+  plays each world hard and lists the overrides, injects and processes it could not reach;
+  a listed item is a QUESTION, and the ones already answered are recorded in the script so
+  nobody re-does the work. It is a tool and not a build gate, because reachability is not
+  decidable and the last few are usually hard rather than dead — the one that WAS dead
+  needed a twenty-point trust fall at three a turn, in a ten-turn world, and then had to
+  win a Director slot against five other injects.
 - Moving somebody faster than the map allows is rejected the same way, and rejection takes
   the whole write with it, so the person simply never goes. Checked statically too.
 - An invariant that fires is a bug, and it fails silently: the write is rejected, the
@@ -333,6 +345,7 @@ the screen.
 ## 10. Repository shape
 
 ```
+scripts/           tools that are not tests — the authored-content audit lives here
 lib/aw/            engine — pure TypeScript, no I/O, no scenario knowledge
 lib/aw/play/       How You Play — reads finished runs, never read BY the engine
 content/yourmove/  worlds, as data. No logic: conditions are a declarative language

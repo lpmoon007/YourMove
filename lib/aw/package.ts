@@ -504,6 +504,56 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   const holderKnows = (actor: string, fact: string): boolean =>
     p.cast.some((c) => c.id === actor && c.knows.includes(fact)) ||
     p.holds.some((h) => h.actor === actor && h.fact === fact);
+  // A condition on a flag nothing ever sets is dead content: a trigger that cannot fire, a
+  // scoring rule that cannot score, an ending branch nobody reaches. Static, so asked here.
+  const flagsRead = new Set<string>();
+  const readFlags = (pred: unknown): void => {
+    if (!pred || typeof pred !== 'object') return;
+    const rec = pred as Record<string, unknown>;
+    if (typeof rec.flag === 'string') flagsRead.add(rec.flag);
+    for (const v of Object.values(rec)) {
+      if (Array.isArray(v)) v.forEach(readFlags);
+      else if (v && typeof v === 'object') readFlags(v);
+    }
+  };
+  for (const o of p.overrides) readFlags(o.when?.pred);
+  for (const i of p.injects) readFlags(i.when);
+  for (const w of p.processes) readFlags(w.trigger?.when);
+  for (const d of p.discovery_paths) readFlags(d.requires);
+  for (const v of p.verbs) readFlags(v.chip_when);
+  for (const dim of p.outcome_dimensions) for (const rule of dim.scoring) readFlags(rule.when);
+
+  const flagsSet = new Set<string>(Object.keys(p.world.flags ?? {}));
+  const setFrom = (effects: readonly { kind: string; id?: string }[] | undefined): void => {
+    for (const e of effects ?? []) if (e.kind === 'flag' && e.id) flagsSet.add(e.id);
+  };
+  for (const o of p.overrides) {
+    setFrom(o.effects);
+    setFrom(o.effects_else);
+  }
+  for (const i of p.injects) setFrom(i.effects);
+  for (const w of p.processes) setFrom(w.effects);
+  for (const v of p.verbs) for (const outcome of Object.values(v.effects_by_outcome ?? {})) setFrom(outcome);
+
+  for (const f of flagsRead)
+    if (!flagsSet.has(f))
+      err('flag_never_set', `something waits on the flag "${f}" and nothing in this world ever sets it`);
+
+  // A two-branch override has to READ as two branches. One shipped with `summary` and
+  // `summary_else` byte-identical, so killing a forgery and killing a true story printed
+  // the same paragraph and the only difference was a hidden outcome label. The flags
+  // branched correctly the whole time, which is why nothing else noticed.
+  for (const o of p.overrides) {
+    if (o.outcome !== 'from_truth') continue;
+    if (!o.summary_else?.trim())
+      err('branch_has_no_else', `override ${o.id} decides on truth and has no summary_else — one branch has no words of its own`);
+    else if (o.summary_else.trim() === (o.summary ?? '').trim())
+      err(
+        'branches_read_the_same',
+        `override ${o.id} prints the same paragraph either way — the player cannot tell which branch they got`,
+      );
+  }
+
   const discloserIds = new Set(p.cast.map((c) => c.id));
   const authoredEffects = [
     ...p.injects.map((i) => [`inject ${i.id}`, i.effects] as const),

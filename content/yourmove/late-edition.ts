@@ -839,14 +839,18 @@ export const LATE_EDITION: ScenarioPackage = {
         { kind: 'flag', id: 'page_status', value: 'gone' },
       ],
       summary:
-        'You kill it. The room goes quiet in the particular way a room goes quiet when somebody has just been overruled, and the page goes out with a swimming gala on it.',
+        'You kill it, and the page goes out with a swimming gala on it. Nell does not speak to you for eleven days. ' +
+        'On the twelfth a rival paper runs the memo, and on the fourteenth it runs a correction longer than the story was, ' +
+        'and Arthur puts his coat on and says the only true thing anybody says all week, which is that it would have been us.',
       effects_else: [
         { kind: 'flag', id: 'spiked', value: true },
         { kind: 'flag', id: 'spiked_true', value: true },
         { kind: 'flag', id: 'page_status', value: 'gone' },
       ],
       summary_else:
-        'You kill it. The room goes quiet in the particular way a room goes quiet when somebody has just been overruled, and the page goes out with a swimming gala on it.',
+        'You kill it. The room goes quiet in the particular way a room goes quiet when somebody has just been overruled, ' +
+        'and the page goes out with a swimming gala on it. Nobody ever prints it. The deputy mayor is still in post at the ' +
+        'end of the following year, two people are still dead, and the only paper that ever held that memo decided not to.',
       play_signals: [
         { dimension: 'caution_boldness', direction: -0.8, strength: 0.9, context: 'You spiked it.' },
       ],
@@ -858,7 +862,12 @@ export const LATE_EDITION: ScenarioPackage = {
     {
       id: 'i_nell_threatens',
       kind: 'pressure',
-      when: { all: [{ disposition: { actor: 'nell', axis: 'trust', lt: 10 } }, { turns: { gte: 2 } }] },
+      // Twenty, not ten. Her trust starts at thirty and a press that LANDS raises it, so ten
+      // meant a twenty-point fall at three a turn — reachable only around turn eight of a
+      // ten-turn night, by which time five other injects have taken the Director's slots. It
+      // never fired once in any playthrough. Twenty puts it near turn four, where a reporter
+      // losing faith in you still has somewhere to go.
+      when: { all: [{ disposition: { actor: 'nell', axis: 'trust', lt: 20 } }, { turns: { gte: 2 } }] },
       once: true,
       actor: 'nell',
       actor_type: 'character',
