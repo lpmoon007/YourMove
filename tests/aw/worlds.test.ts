@@ -556,22 +556,28 @@ test('the screen never prints an answer the player has not found', async () => {
         await takeTurn(w, move);
 
         const ui = w.projectUi();
-        const onScreen = words(ui.documents.map((d) => `${d.title} ${d.body}`).join(' '));
-        if (!onScreen.size) continue;
+        if (!ui.documents.length) continue;
         const held = new Set(w.knowledge.factsFor(w.playerId).map(({ fact }) => fact));
 
-        for (const fact of pkg.facts) {
-          if (held.has(fact.id)) continue;
-          const value = w.truth.read(fact.id);
-          if (typeof value !== 'string') continue;
-          const valueWords = [...words(value)];
-          if (!valueWords.length) continue;
-          const overlap = valueWords.filter((word) => onScreen.has(word));
-          assert.ok(
-            overlap.length < Math.max(3, valueWords.length * 0.25),
-            `${pkg.slug}: after "${move}" the screen prints "${fact.id}" (${overlap.join(' ')}) ` +
-              'before the player has found it',
-          );
+        // Per document, not across all of them at once. A fact is given away by a paper
+        // that states it, and pooling the words of three separate documents accused a
+        // courier's pass reading "9 o'clock at the ferry" of printing the hour the man was
+        // stopped at the picket, which is a different hour and the point of that scene.
+        for (const doc of ui.documents) {
+          const onScreen = words(`${doc.title} ${doc.body}`);
+          for (const fact of pkg.facts) {
+            if (held.has(fact.id)) continue;
+            const value = w.truth.read(fact.id);
+            if (typeof value !== 'string') continue;
+            const valueWords = [...words(value)];
+            if (!valueWords.length) continue;
+            const overlap = valueWords.filter((word) => onScreen.has(word));
+            assert.ok(
+              overlap.length < Math.max(3, valueWords.length * 0.25),
+              `${pkg.slug}: after "${move}" the panel showing "${doc.title}" prints "${fact.id}" ` +
+                `(${overlap.join(' ')}) before the player has found it`,
+            );
+          }
         }
       }
     }

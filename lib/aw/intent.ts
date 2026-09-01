@@ -102,9 +102,39 @@ export function deterministicParse(input: ParseInput): Intent {
 
   // --- targets: any actor / entity / location named in the text ---
   const targets: string[] = [];
+
+  // A person says "the case", not "the general's dispatch case". An object answers to the
+  // last word of its name as well as to all of it — but only where nothing else in the
+  // room ends the same way, because "the book" with a night book AND a vehicle book on the
+  // desk is a question rather than a reference, and the world should ask rather than pick.
+  const headNoun = (name: string): string => {
+    const words = name
+      .toLowerCase()
+      .replace(/^(the|a|an|your|his|her|their)\s+/, '')
+      .trim()
+      .split(/\s+/);
+    return words.length > 1 ? (words[words.length - 1] ?? '') : '';
+  };
+  const spokenFor = new Set<string>();
+  for (const e of input.surface.entities) {
+    spokenFor.add(e.name.toLowerCase());
+    spokenFor.add(e.id.toLowerCase());
+  }
+  const headCount = new Map<string, number>();
+  for (const e of input.surface.entities) {
+    const h = headNoun(e.name);
+    if (h.length > 3) headCount.set(h, (headCount.get(h) ?? 0) + 1);
+  }
+  const shortNameFor = (e: { id: string; name: string }): string[] => {
+    const h = headNoun(e.name);
+    // Not when two things share it, and not when it is already some other thing's whole name.
+    if (h.length > 3 && headCount.get(h) === 1 && !spokenFor.has(h)) return [h];
+    return [];
+  };
+
   const named = [
     ...input.surface.actors.map((a) => ({ id: a.id, words: [a.name, a.name.split(' ')[0] ?? a.name, a.id] })),
-    ...input.surface.entities.map((e) => ({ id: e.id, words: [e.name, e.id] })),
+    ...input.surface.entities.map((e) => ({ id: e.id, words: [e.name, e.id, ...shortNameFor(e)] })),
     ...(input.surface.location ? [{ id: input.surface.location.id, words: [input.surface.location.name] }] : []),
   ];
   for (const n of named)

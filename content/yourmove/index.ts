@@ -18,9 +18,10 @@ import { THE_FAIR_COPY } from './the-fair-copy';
 import { HEAD_OF_PRESSURE } from './head-of-pressure';
 import { THE_LAST_HOUR } from './the-last-hour';
 import { CONTEMPT } from './contempt';
+import { HIGH_WATER } from './high-water';
 
 /** Every world a player can enter, in the order they are offered. */
-export const WORLDS: ScenarioPackage[] = [LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY, THE_FAIR_COPY, HEAD_OF_PRESSURE, THE_LAST_HOUR, CONTEMPT];
+export const WORLDS: ScenarioPackage[] = [LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY, THE_FAIR_COPY, HEAD_OF_PRESSURE, THE_LAST_HOUR, CONTEMPT, HIGH_WATER];
 
 /** Where a player lands when they have not asked for anything in particular. */
 export const DEFAULT_WORLD: ScenarioPackage = WORLDS[0]!;

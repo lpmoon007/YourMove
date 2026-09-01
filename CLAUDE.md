@@ -164,6 +164,17 @@ Nothing else in the product should have to change.
   product is putting in the player's mouth: a taster's own "tell Ruiz the statement is
   accurate and I have nothing to add to it" was heard as `refuse`, a different act that
   quietly spent one of three silences, and it was live on the marketing site.
+- An object answers to its head noun as well as to all of its name. "look at the case" is
+  what a person types at "the general's dispatch case", and five of nine worlds had things
+  on the table that could not be named that way — while the test that looks at every
+  searchable thing passed, because it typed each object's full name. Two things sharing a
+  head noun stays a question the world asks ("the book", with a night book and a vehicle
+  book on the desk), and a head noun that is already some other thing's whole name is left
+  alone.
+- A check that a screen has not leaked an answer reads ONE document at a time. Pooling the
+  words of everything on screen accused a courier's pass reading "9 o'clock at the ferry"
+  of printing the hour the man was stopped at the picket — a different hour, an hour's ride
+  apart, and the point of that scene.
 - Nothing moves the player between locations, and the parser only offers what is in the
   one they are standing in. A discovery path through an object stowed somewhere else is
   not a path — the player is told "look at what?" as though they typed nonsense — so the
