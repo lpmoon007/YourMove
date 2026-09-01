@@ -595,6 +595,7 @@ export const INBOUND: ScenarioPackage = {
       play_signals: [
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
+        { dimension: 'conclusion_returns', direction: -0.4, strength: 0.5, context: 'You took somebody in the room for their reading of it.' },
       ],
     },
     {
@@ -627,6 +628,7 @@ export const INBOUND: ScenarioPackage = {
       chip_when: { always: true },
       play_signals: [
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
+        { dimension: 'conclusion_returns', direction: 0.6, strength: 0.7, context: 'You went to what the instrument actually received.' },
       ],
     },
     {
@@ -672,6 +674,7 @@ export const INBOUND: ScenarioPackage = {
       play_signals: [
         { dimension: 'preserve_risk', direction: 0.6, strength: 0.7, context: 'You gave away your own position to find something out.' },
         { dimension: 'direct_cunning', direction: -0.5, strength: 0.5, context: 'You went at it in the open.' },
+        { dimension: 'ship_certainty', direction: 0.6, strength: 0.7, context: 'You spent your own position to get closer to certain.' },
       ],
     },
     {
@@ -702,6 +705,7 @@ export const INBOUND: ScenarioPackage = {
       play_signals: [
         { dimension: 'caution_boldness', direction: 0.8, strength: 0.9, context: 'You acted on what you had rather than wait for more.' },
         { dimension: 'preserve_risk', direction: -0.5, strength: 0.6, context: 'You protected the ship first.' },
+        { dimension: 'ship_certainty', direction: -0.9, strength: 0.9, context: 'You fired without a name for it, because the ship came first.' },
       ],
     },
     {
@@ -719,6 +723,7 @@ export const INBOUND: ScenarioPackage = {
       play_signals: [
         { dimension: 'caution_boldness', direction: -0.8, strength: 0.9, context: 'You would not fire on something you could not name.' },
         { dimension: 'preserve_risk', direction: 0.6, strength: 0.7, context: 'You accepted risk to your own ship rather than take an irreversible act.' },
+        { dimension: 'ship_certainty', direction: 0.9, strength: 0.9, context: 'You would not fire until somebody could name it, and wore the risk of that.' },
       ],
     },
     {
@@ -736,6 +741,7 @@ export const INBOUND: ScenarioPackage = {
       play_signals: [
         { dimension: 'preserve_risk', direction: -0.7, strength: 0.8, context: 'You took your own people out of it.' },
         { dimension: 'loyalty_opportunism', direction: 0.4, strength: 0.5, context: 'You left a station you had been given.' },
+        { dimension: 'ship_certainty', direction: -0.5, strength: 0.6, context: 'You took your ship out of it rather than settle what it was.' },
       ],
     },
   ],

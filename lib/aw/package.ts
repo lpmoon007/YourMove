@@ -504,6 +504,25 @@ export function validateScenarioPackage(p: ScenarioPackage): ValidationIssue[] {
   const holderKnows = (actor: string, fact: string): boolean =>
     p.cast.some((c) => c.id === actor && c.knows.includes(fact)) ||
     p.holds.some((h) => h.actor === actor && h.fact === fact);
+  // A world's own dimensions are the two questions it asks that no other world does. If
+  // nothing in the world ever emits a signal for one, it is a question the world never
+  // actually puts: all eleven worlds declared two each and not one of them was ever fed,
+  // so every run card had nothing of its own to say.
+  const emitted = new Set<string>();
+  const scanSignals = (sigs: readonly { dimension: string }[] | undefined): void => {
+    for (const sig of sigs ?? []) emitted.add(sig.dimension);
+  };
+  for (const v of p.verbs) scanSignals(v.play_signals);
+  for (const o of p.overrides) scanSignals(o.play_signals);
+  for (const i of p.injects) scanSignals((i as { play_signals?: readonly { dimension: string }[] }).play_signals);
+  for (const d of p.world_specific_dimensions ?? [])
+    if (!emitted.has(d.id))
+      err(
+        'dimension_never_measured',
+        `world dimension ${d.id} is declared and nothing in this world ever emits a signal for it — ` +
+          'the run card would have nothing to say about it',
+      );
+
   // A condition on a flag nothing ever sets is dead content: a trigger that cannot fire, a
   // scoring rule that cannot score, an ending branch nobody reaches. Static, so asked here.
   const flagsRead = new Set<string>();

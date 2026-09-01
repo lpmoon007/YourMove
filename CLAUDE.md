@@ -90,6 +90,20 @@ is how you tended to play in these worlds." It never says "this is who you are."
   `(run_id, opportunity_id, dimension)` and would otherwise drop one silently, leaving the
   stored profile disagreeing with the run the player just finished.
 
+- A world declares two dimensions of its own — the questions it asks that no other world
+  does. All eleven declared two and fed none: no verb emitted a signal for one, nothing
+  passed them to the profile, and the shapes did not match anyway (a world writes
+  `label_left`, a dimension wants `left`), so they would have rendered as blank lines. They
+  belong on the RUN CARD and not in the cross-world profile, where ten worlds that never
+  tested them would report untested and drown the one that did. Their copy is generated
+  from the label rather than authored a third time. Checked now: a declared dimension
+  nothing emits for fails the build, and so does a read with no words in it.
+- A dimension somebody plays differently in different worlds must not veto a title. Requiring
+  every dimension a title names to be settled meant the more worlds a player saw, the fewer
+  titles they could hold — six runs across six worlds settled Force and Control exactly as
+  The Hammer asks and named nothing, because directness had gone context-dependent. It
+  abstains instead: two dimensions still have to say it, and a title is never mostly skipped.
+
 **The architectural rule, enforced by a test:** the simulation emits events; the pattern
 engine reads them afterward.
 

@@ -611,6 +611,7 @@ export const THE_NOD: ScenarioPackage = {
       base_difficulty: 0.03,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'handed_established', direction: 0.6, strength: 0.7, context: 'You established it rather than take it as handed.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -671,6 +672,7 @@ export const THE_NOD: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'loss_risk', direction: 0.7, strength: 0.8, context: 'You took the uncertain loss over the certain one.' },
         { dimension: 'caution_boldness', direction: 0.8, strength: 0.9, context: 'You went on what you had.' },
         { dimension: 'preserve_risk', direction: 0.7, strength: 0.7, context: 'You took the risk rather than the loss.' },
       ],
@@ -688,6 +690,7 @@ export const THE_NOD: ScenarioPackage = {
       base_difficulty: 0.15,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'loss_risk', direction: -0.9, strength: 0.9, context: 'You took the certain loss.' },
         { dimension: 'caution_boldness', direction: -0.8, strength: 0.9, context: 'You took the certain loss over the uncertain one.' },
         { dimension: 'preserve_risk', direction: -0.7, strength: 0.7, context: 'You protected what was left rather than chase what was not.' },
       ],
@@ -705,6 +708,7 @@ export const THE_NOD: ScenarioPackage = {
       base_difficulty: 0.3,
       chip_when: { knows: { actor: 'you', fact: 'second_gate' } },
       play_signals: [
+        { dimension: 'handed_established', direction: 0.8, strength: 0.9, context: 'You went on what this room established.' },
         { dimension: 'direct_cunning', direction: 0.6, strength: 0.6, context: 'You found the way in that nobody had put on the table.' },
         { dimension: 'caution_boldness', direction: 0.4, strength: 0.5, context: 'You went, but not at the thing you were pointed at.' },
       ],

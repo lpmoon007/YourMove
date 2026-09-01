@@ -619,6 +619,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'instrument_people', direction: 0.5, strength: 0.6, context: 'You went to whoever had been there.' },
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
       ],
@@ -656,6 +657,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
       base_difficulty: 0.03,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'instrument_people', direction: -0.5, strength: 0.6, context: 'You went to the reading.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -720,6 +722,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { clock: { gte: 3 } },
       play_signals: [
+        { dimension: 'plan_judgment', direction: -0.4, strength: 0.6, context: 'You held to the priority you were given.' },
         { dimension: 'caution_boldness', direction: -0.5, strength: 0.7, context: 'You went with the version everybody in the room was already pointing at.' },
         { dimension: 'control_delegation', direction: -0.4, strength: 0.5, context: 'You made the call yourself and closed it.' },
       ],
@@ -737,6 +740,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
       base_difficulty: 0.2,
       chip_when: { clock: { gte: 3 } },
       play_signals: [
+        { dimension: 'plan_judgment', direction: 0.6, strength: 0.7, context: 'You went against the priority you were given.' },
         { dimension: 'caution_boldness', direction: 0.7, strength: 0.8, context: 'You went against what the room and the plan were both saying.' },
         { dimension: 'loyalty_opportunism', direction: -0.4, strength: 0.5, context: 'You chose the people with nobody speaking for them.' },
       ],
@@ -754,6 +758,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
       base_difficulty: 0.35,
       chip_when: { turns: { gte: 2 } },
       play_signals: [
+        { dimension: 'plan_judgment', direction: 0.8, strength: 0.9, context: 'You did the thing nobody had written down.' },
         { dimension: 'caution_boldness', direction: 0.85, strength: 0.9, context: 'You reached for the outcome where nobody loses instead of choosing who does.' },
         { dimension: 'preserve_risk', direction: 0.85, strength: 0.85, context: 'You put both districts on one attempt.' },
       ],

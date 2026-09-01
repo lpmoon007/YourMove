@@ -599,6 +599,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
         ],
       },
       play_signals: [
+        { dimension: 'talk_silence', direction: -0.6, strength: 0.6, context: 'You talked.' },
         { dimension: 'direct_cunning', direction: -0.7, strength: 0.6, context: 'You gave something away rather than holding it.' },
         { dimension: 'preserve_risk', direction: 0.4, strength: 0.5, context: 'You put something of your own on the record.' },
       ],
@@ -614,6 +615,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { resource: { id: 'silence', holder: 'you', gte: 1 } },
       play_signals: [
+        { dimension: 'talk_silence', direction: 0.8, strength: 0.8, context: 'You gave them nothing.' },
         { dimension: 'preserve_risk', direction: -0.7, strength: 0.7, context: 'You protected what you had rather than trading it.' },
         { dimension: 'direct_cunning', direction: 0.4, strength: 0.4, context: 'You gave the room nothing to work with.' },
       ],
@@ -644,6 +646,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { clock: { gte: 6 } },
       play_signals: [
+        { dimension: 'self_others', direction: -0.8, strength: 0.9, context: 'You answered for it yourself.' },
         { dimension: 'caution_boldness', direction: -0.6, strength: 0.8, context: 'You took the certain version of the night over the uncertain one.' },
         { dimension: 'loyalty_opportunism', direction: -0.4, strength: 0.5, context: 'You answered for it yourself.' },
       ],
@@ -661,6 +664,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
       base_difficulty: 0.2,
       chip_when: { clock: { gte: 6 } },
       play_signals: [
+        { dimension: 'talk_silence', direction: 0.4, strength: 0.6, context: 'You held the line you had and added nothing to it.' },
         { dimension: 'caution_boldness', direction: 0.7, strength: 0.85, context: 'You made them prove it rather than settling.' },
         { dimension: 'preserve_risk', direction: 0.6, strength: 0.7, context: 'You kept everything and bet on their case being thin.' },
       ],
@@ -678,6 +682,7 @@ export const FOUR_MINUTES: ScenarioPackage = {
       base_difficulty: 0.25,
       chip_when: { turns: { gte: 3 } },
       play_signals: [
+        { dimension: 'self_others', direction: 0.9, strength: 0.9, context: 'You passed it to somebody else.' },
         { dimension: 'loyalty_opportunism', direction: 0.9, strength: 0.9, context: 'You traded somebody else to buy your own way out.' },
         { dimension: 'force_diplomacy', direction: 0.4, strength: 0.5, context: 'You made a deal rather than a stand.' },
       ],

@@ -19,7 +19,7 @@ import {
   type UiProjection,
   type World,
 } from '@/lib/aw';
-import { awardBadges, buildProfile, buildRunCard, observePlay, type Badge, type PlayProfile, type PlayRead } from '@/lib/aw/play';
+import { awardBadges, buildProfile, buildRunCard, observePlay, worldDimensions, type Badge, type PlayProfile, type PlayRead } from '@/lib/aw/play';
 import { modelNarrator } from '@/lib/aw/model/narrate';
 import { modelParser } from '@/lib/aw/model/parse';
 import { runStore } from '@/lib/aw/store';
@@ -51,7 +51,7 @@ export interface DebriefView {
   world: string;
   title: string;
   /** How this one run read, on its own. Cross-run history lives at /how-you-play. */
-  run_card: { reads: PlayRead[]; sentence: string };
+  run_card: { reads: PlayRead[]; sentence: string; world_reads: PlayRead[] };
   badges: Badge[];
   outcome: RunOutcome;
   reveal: Reveal;
@@ -156,7 +156,10 @@ export async function debrief(runId: string): Promise<DebriefView | { error: str
     run_id: runId,
     world: world.pkg.slug,
     title: world.pkg.title,
-    run_card: buildRunCard(evidence),
+    // With this world's own two dimensions. The generic eight say how somebody played;
+    // a world's own say what that meant here, and they were declared in every world and
+    // read by nothing until now.
+    run_card: buildRunCard(evidence, worldDimensions(world.pkg)),
     badges: awardBadges(world, evidence),
     outcome: scoreOutcome(world),
     reveal: buildReveal(world),

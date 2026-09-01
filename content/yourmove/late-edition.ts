@@ -592,6 +592,7 @@ export const LATE_EDITION: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'verify_defer', direction: 0.4, strength: 0.5, context: 'You took your people at their word.' },
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
       ],
@@ -628,6 +629,7 @@ export const LATE_EDITION: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'verify_defer', direction: -0.6, strength: 0.7, context: 'You checked the thing itself.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -659,6 +661,7 @@ export const LATE_EDITION: ScenarioPackage = {
       base_difficulty: 0.12,
       chip_when: { resource: { id: 'promises', holder: 'you', gte: 1 } },
       play_signals: [
+        { dimension: 'protect_publish', direction: -0.6, strength: 0.7, context: 'You gave your word to keep somebody out of it.' },
         { dimension: 'force_diplomacy', direction: 0.75, strength: 0.8, context: 'You gave something of your own instead of demanding.' },
         { dimension: 'preserve_risk', direction: 0.5, strength: 0.6, context: 'You spent your word to get an answer.' },
       ],
@@ -721,6 +724,7 @@ export const LATE_EDITION: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { clock: { gte: 6 } },
       play_signals: [
+        { dimension: 'protect_publish', direction: 0.8, strength: 0.9, context: 'You ran it.' },
         { dimension: 'caution_boldness', direction: 0.8, strength: 0.9, context: 'You committed to the bolder version of the night.' },
         { dimension: 'preserve_risk', direction: 0.8, strength: 0.8, context: 'You put the paper behind it.' },
       ],
@@ -738,6 +742,7 @@ export const LATE_EDITION: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { clock: { gte: 6 } },
       play_signals: [
+        { dimension: 'protect_publish', direction: -0.6, strength: 0.8, context: 'You did not run it.' },
         { dimension: 'caution_boldness', direction: -0.8, strength: 0.9, context: 'You took the survivable version of the night.' },
         { dimension: 'preserve_risk', direction: -0.7, strength: 0.8, context: 'You protected what you already had.' },
       ],

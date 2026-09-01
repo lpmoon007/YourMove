@@ -266,6 +266,15 @@ body { -webkit-font-smoothing: antialiased; }
 .ym-runcard-bar { flex: 1; height: 8px; background: var(--ym-line); }
 .ym-runcard-bar span { display: block; height: 100%; background: var(--ym-cool); }
 
+/* What this world asked of you — its own two dimensions, which no other world has. */
+.ym-worldreads { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.ym-worldreads li { border-left: 2px solid var(--ym-line); padding-left: 12px; }
+.ym-worldread-poles {
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ym-dim);
+}
+.ym-worldread-read { margin: 4px 0 2px; }
+.ym-worldread-measures { margin: 0; font-size: 13px; color: var(--ym-dim); }
+
 .ym-code {
   margin: 10px 0; padding: 14px 16px; background: var(--ym-panel); border: 1px solid var(--ym-hot);
   font-size: 18px; letter-spacing: 0.04em; word-break: break-word; user-select: all;

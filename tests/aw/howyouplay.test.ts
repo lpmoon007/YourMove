@@ -12,7 +12,9 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 
 import { takeTurn } from '@/lib/aw';
-import { awardBadges, buildProfile, buildRunCard, CORE_EIGHT, observePlay } from '@/lib/aw/play';
+import { awardBadges, buildProfile, buildRunCard, CORE_EIGHT, observePlay, worldDimensions } from '@/lib/aw/play';
+import { loadWorld } from '@/lib/aw';
+import { WORLDS } from '@/content/yourmove';
 import { fixture, PKG } from './_harness';
 
 /** Vocabulary that turns a play pattern into a claim about a person. */
@@ -237,4 +239,50 @@ test('every badge is earned for something that happened', async () => {
     assert.equal(IS_CLAIM.test(b.earned_for), false, `${b.id} describes a person: "${b.earned_for}"`);
     assert.equal(b.run_id, w.run_id);
   }
+});
+
+test("every world's own two questions get asked, and get words", async () => {
+  // A world declares two dimensions no other world has. They were declared in all eleven
+  // and fed by none: nothing emitted a signal for one, nothing passed them to the profile,
+  // and the shapes did not even match — worlds write label_left, a dimension wants left —
+  // so a run card had nothing of its own to say and would have rendered blank if it had.
+  const seen = new Map<string, number>();
+
+  for (const pkg of WORLDS) {
+    const own = worldDimensions(pkg);
+    assert.equal(own.length, (pkg.world_specific_dimensions ?? []).length, `${pkg.slug}: dimensions lost in translation`);
+    for (const d of own) {
+      // By name, not by whatever keys happen to be present: the raw world declaration has
+      // id/label_left/label_right/measures and passes an "every value is a string" check
+      // while having none of the fields a read is built from.
+      for (const field of ['left', 'right', 'measures', 'copy_left', 'copy_right', 'copy_mixed'] as const)
+        assert.ok(
+          typeof d[field] === 'string' && d[field].trim(),
+          `${pkg.slug}/${d.id}: ${field} is missing or empty — this renders as a blank line to a player`,
+        );
+      // The copy is generated from the label, so a Title Case label must not survive into
+      // the middle of a sentence: "you tended to wait For Certainty" is not English.
+      for (const copy of [d.copy_left, d.copy_right, d.copy_mixed])
+        assert.doesNotMatch(copy.slice(copy.indexOf(' ') + 1), /\s[A-Z][a-z]/, `${pkg.slug}/${d.id}: Title Case leaked into "${copy}"`);
+    }
+
+    // And they have to actually come out of play, not just exist.
+    const moves = [
+      ...(pkg.world.opening?.choices ?? []).map((c) => c.move),
+      ...pkg.world.example_actions,
+      pkg.verbs.find((v) => v.commitment)!.label.toLowerCase(),
+    ];
+    const w = loadWorld(pkg, { run_id: 'own', seed: `${pkg.slug}-own-dims` });
+    for (const m of moves) {
+      const t = await takeTurn(w, m);
+      if (t.ended) break;
+    }
+    const card = buildRunCard(observePlay(w), own);
+    seen.set(pkg.slug, card.world_reads.length);
+    for (const r of card.world_reads)
+      assert.ok(r.read.trim() && !/undefined/.test(r.read), `${pkg.slug}/${r.dimension}: read is "${r.read}"`);
+  }
+
+  const silent = [...seen.entries()].filter(([, n]) => n === 0).map(([slug]) => slug);
+  assert.deepEqual(silent, [], `these worlds said nothing of their own after a full run: ${silent.join(', ')}`);
 });

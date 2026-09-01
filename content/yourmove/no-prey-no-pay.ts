@@ -570,6 +570,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
         ],
       },
       play_signals: [
+        { dimension: 'authority_consent', direction: -0.5, strength: 0.6, context: 'You leaned on them rather than won them.' },
         { dimension: 'force_diplomacy', direction: -0.7, strength: 0.8, context: 'You applied pressure rather than waiting for them to come around.' },
         { dimension: 'direct_cunning', direction: -0.5, strength: 0.5, context: 'You made it obvious what you wanted.' },
       ],
@@ -616,6 +617,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
       base_difficulty: 0.12,
       chip_when: { resource: { id: 'coin', holder: 'you', gte: 1 } },
       play_signals: [
+        { dimension: 'authority_consent', direction: 0.4, strength: 0.5, context: 'You bought agreement rather than ordered it.' },
         { dimension: 'force_diplomacy', direction: 0.75, strength: 0.8, context: 'You paid for movement instead of demanding it.' },
         { dimension: 'preserve_risk', direction: 0.5, strength: 0.6, context: 'You spent from what was left to get an answer.' },
       ],
@@ -659,6 +661,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
       base_difficulty: 0.15,
       chip_when: { clock: { gte: 8 } },
       play_signals: [
+        { dimension: 'authority_consent', direction: -0.4, strength: 0.6, context: 'You set the course and expected it to be followed.' },
         { dimension: 'caution_boldness', direction: 0.85, strength: 0.9, context: 'You took the version of the day with the most in it and the most against it.' },
         { dimension: 'preserve_risk', direction: 0.8, strength: 0.8, context: 'You put the ship behind it.' },
       ],
@@ -676,6 +679,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { clock: { gte: 8 } },
       play_signals: [
+        { dimension: 'cabin_deck', direction: 0.8, strength: 0.9, context: 'You let it go to the deck.' },
         { dimension: 'caution_boldness', direction: -0.5, strength: 0.7, context: 'You let it come to you rather than moving first.' },
         { dimension: 'loyalty_opportunism', direction: -0.6, strength: 0.7, context: 'You took the ending that cost you rather than the one that cost somebody else.' },
       ],
@@ -698,6 +702,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
       base_difficulty: 0.25,
       chip_when: { turns: { gte: 2 } },
       play_signals: [
+        { dimension: 'cabin_deck', direction: 0.5, strength: 0.6, context: 'You put an alternative where everybody could hear it.' },
         { dimension: 'force_diplomacy', direction: 0.7, strength: 0.8, context: 'You made an offer rather than a stand.' },
         { dimension: 'solo_coalition', direction: 0.7, strength: 0.8, context: 'You put it to everybody rather than settling it in a cabin.' },
       ],

@@ -576,6 +576,7 @@ export const LAST_JOB: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'trust_crew_compartmentalize', direction: -0.4, strength: 0.5, context: 'You put it to them rather than work round them.' },
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
       ],
@@ -615,6 +616,7 @@ export const LAST_JOB: ScenarioPackage = {
         backfire: [{ kind: 'resource', id: 'heat', from: 'world', to: 'you', amount: 1 }],
       },
       play_signals: [
+        { dimension: 'trust_crew_compartmentalize', direction: 0.5, strength: 0.6, context: 'You checked it without involving anybody.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You went and looked yourself rather than asking anyone.' },
       ],
     },
@@ -711,6 +713,7 @@ export const LAST_JOB: ScenarioPackage = {
       base_difficulty: 0.3,
       chip_when: { turns: { gte: 2 } },
       play_signals: [
+        { dimension: 'abort_push_through', direction: 0.6, strength: 0.7, context: 'You settled it by naming somebody rather than leaving it open.' },
         { dimension: 'force_diplomacy', direction: -0.5, strength: 0.6, context: 'You named somebody in front of everyone.' },
         { dimension: 'direct_cunning', direction: -0.8, strength: 0.7, context: 'You said the thing out loud instead of acting on it quietly.' },
         { dimension: 'loyalty_opportunism', direction: 0.5, strength: 0.6, context: 'You turned on somebody from your own crew.' },
@@ -727,6 +730,7 @@ export const LAST_JOB: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { clock: { gte: 8 } },
       play_signals: [
+        { dimension: 'abort_push_through', direction: -0.9, strength: 0.9, context: 'You took the bag and ended it.' },
         { dimension: 'preserve_risk', direction: -0.6, strength: 0.7, context: 'You took what you had rather than reaching for more.' },
         { dimension: 'solo_coalition', direction: -0.5, strength: 0.6, context: 'You settled it by yourself, on your way out the door.' },
         { dimension: 'loyalty_opportunism', direction: 0.3, strength: 0.4, context: 'You left the question standing and the crew with it.' },

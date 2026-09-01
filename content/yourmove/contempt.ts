@@ -593,6 +593,7 @@ export const CONTEMPT: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'told_checked', direction: -0.3, strength: 0.4, context: 'You worked from what the room told you.' },
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
       ],
@@ -626,6 +627,7 @@ export const CONTEMPT: ScenarioPackage = {
       base_difficulty: 0.03,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'told_checked', direction: 0.6, strength: 0.7, context: 'You read it yourself.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -697,6 +699,7 @@ export const CONTEMPT: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'promise_consequence', direction: 0.9, strength: 0.9, context: 'You took the consequence off the table.' },
         { dimension: 'loyalty_opportunism', direction: 0.8, strength: 0.9, context: 'You gave up the person you had promised to protect.' },
         { dimension: 'preserve_risk', direction: -0.6, strength: 0.6, context: 'You took the way out that was on the table.' },
       ],
@@ -714,6 +717,7 @@ export const CONTEMPT: ScenarioPackage = {
       base_difficulty: 0.15,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'promise_consequence', direction: -0.9, strength: 0.9, context: 'You kept it and paid for it.' },
         { dimension: 'loyalty_opportunism', direction: -0.9, strength: 0.9, context: 'You kept a promise that cost you something real.' },
         { dimension: 'caution_boldness', direction: 0.6, strength: 0.6, context: 'You took the consequence rather than the exit.' },
       ],
@@ -731,6 +735,7 @@ export const CONTEMPT: ScenarioPackage = {
       base_difficulty: 0.25,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'promise_consequence', direction: -0.3, strength: 0.6, context: 'You took the thing away rather than the promise.' },
         { dimension: 'preserve_risk', direction: -0.7, strength: 0.7, context: 'You gave up the ground rather than defend it.' },
         { dimension: 'direct_cunning', direction: 0.5, strength: 0.5, context: 'You found the exit nobody in the room had named.' },
       ],

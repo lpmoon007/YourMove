@@ -561,6 +561,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'paper_people', direction: 0.4, strength: 0.5, context: 'You went to the men.' },
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
       ],
@@ -598,6 +599,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
       base_difficulty: 0.04,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'paper_people', direction: -0.6, strength: 0.7, context: 'You went to the document.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -676,6 +678,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { clock: { gte: 8 } },
       play_signals: [
+        { dimension: 'procedure_conscience', direction: -0.7, strength: 0.9, context: 'You returned the finding the process asked for.' },
         { dimension: 'caution_boldness', direction: -0.4, strength: 0.7, context: 'You took the version of the night that was already written.' },
         { dimension: 'control_delegation', direction: -0.5, strength: 0.6, context: 'You settled it with your own name rather than reopening it.' },
       ],
@@ -693,6 +696,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
       base_difficulty: 0.2,
       chip_when: { clock: { gte: 8 } },
       play_signals: [
+        { dimension: 'procedure_conscience', direction: 0.7, strength: 0.9, context: 'You took the weight of it yourself.' },
         { dimension: 'caution_boldness', direction: 0.7, strength: 0.85, context: 'You put yourself between the court and its finding.' },
         { dimension: 'preserve_risk', direction: 0.6, strength: 0.7, context: 'You spent your own standing rather than the prisoner\'s neck.' },
       ],
@@ -710,6 +714,7 @@ export const THE_FAIR_COPY: ScenarioPackage = {
       base_difficulty: 0.3,
       chip_when: { turns: { gte: 3 } },
       play_signals: [
+        { dimension: 'procedure_conscience', direction: 0.5, strength: 0.7, context: 'You named somebody rather than let the process decide.' },
         { dimension: 'caution_boldness', direction: 0.8, strength: 0.9, context: 'You went further than the night required of you.' },
         { dimension: 'force_diplomacy', direction: -0.6, strength: 0.7, context: 'You settled it by naming somebody.' },
       ],

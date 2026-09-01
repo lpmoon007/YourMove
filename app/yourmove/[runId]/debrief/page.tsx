@@ -143,6 +143,26 @@ export default async function DebriefPage({ params }: { params: Promise<{ runId:
         {!d.run_card.reads.length ? <p className="ym-missed">Too few moves to read anything from.</p> : null}
       </div>
 
+      {d.run_card.world_reads.length ? (
+        <>
+          <h2>What this one asked of you</h2>
+          <p className="ym-section-note">
+            The two questions this world puts that no other world does.
+          </p>
+          <ul className="ym-worldreads">
+            {d.run_card.world_reads.map((r) => (
+              <li key={r.dimension}>
+                <span className="ym-worldread-poles">
+                  {r.left} <span aria-hidden="true">·</span> {r.right}
+                </span>
+                <p className="ym-worldread-read">{r.read}</p>
+                <p className="ym-worldread-measures">{r.measures}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+
       {d.badges.length ? (
         <>
           <h2>The world noticed</h2>

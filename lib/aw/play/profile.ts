@@ -211,26 +211,41 @@ const TITLES: TitleRule[] = [
 ];
 
 function chooseTitle(reads: PlayRead[]): PlayProfile['title'] {
-  const pos = new Map(
-    reads.filter((r) => r.position !== null && r.confidence !== 'context-dependent').map((r) => [r.dimension, r.position!]),
-  );
+  const byId = new Map(reads.map((r) => [r.dimension, r]));
   const solid = reads.filter((r) => r.confidence === 'developing' || r.confidence === 'established').length;
   // Nothing gets named on one thin run.
   if (solid < 2) return null;
 
+  // A dimension somebody plays differently in different worlds neither earns a title nor
+  // blocks one. Treating it as a failed requirement meant the more worlds a player saw,
+  // the fewer titles they could hold: six good runs across six worlds settled Force and
+  // Control exactly as The Hammer asks, and named nothing, because directness had gone
+  // context-dependent. The product is a catalogue of worlds; a rule that punishes breadth
+  // is backwards.
   let best: { rule: TitleRule; score: number } | null = null;
   for (const rule of TITLES) {
+    const needs = Object.entries(rule.needs);
     let score = 0;
+    let met = 0;
+    let skipped = 0;
     let ok = true;
-    for (const [dim, need] of Object.entries(rule.needs)) {
-      const p = pos.get(dim);
-      if (p === undefined || (need > 0 ? p < need : p > need)) {
+    for (const [dim, need] of needs) {
+      const read = byId.get(dim);
+      if (read?.confidence === 'context-dependent') {
+        skipped += 1;
+        continue;
+      }
+      const p = read?.position;
+      if (p === undefined || p === null || (need > 0 ? p < need : p > need)) {
         ok = false;
         break;
       }
+      met += 1;
       score += Math.abs(p);
     }
-    if (ok && (!best || score > best.score)) best = { rule, score };
+    // Two dimensions have to actually say it, and a title is never mostly skipped.
+    if (!ok || met < 2 || skipped > needs.length - met) continue;
+    if (!best || score > best.score) best = { rule, score };
   }
   return best ? { name: best.rule.name, because: best.rule.because } : null;
 }
@@ -293,9 +308,20 @@ function findContradictions(reads: PlayRead[]): string[] {
 }
 
 /** The one-run card: how you played THIS world, without any cross-run history. */
-export function buildRunCard(evidence: PlayEvidence[]): { reads: PlayRead[]; sentence: string } {
-  const profile = buildProfile(evidence);
-  const tested = profile.reads.filter((r) => r.position !== null).sort((a, b) => Math.abs(b.position!) - Math.abs(a.position!));
+/** One run's own reading. Takes the world's own dimensions too: they are the point of a
+ *  run card — the generic eight say how you played, and a world's own two say what that
+ *  meant HERE. They are deliberately not folded into the cross-world profile, where ten
+ *  worlds that never tested them would report untested and drown the one that did. */
+export function buildRunCard(
+  evidence: PlayEvidence[],
+  extraDimensions: PlayDimension[] = [],
+): { reads: PlayRead[]; sentence: string; world_reads: PlayRead[] } {
+  const profile = buildProfile(evidence, { extraDimensions });
+  const ownIds = new Set(extraDimensions.map((d) => d.id));
+  const tested = profile.reads
+    .filter((r) => r.position !== null && !ownIds.has(r.dimension))
+    .sort((a, b) => Math.abs(b.position!) - Math.abs(a.position!));
+  const worldReads = profile.reads.filter((r) => ownIds.has(r.dimension) && r.position !== null);
   const top = tested.slice(0, 4);
   const sentence = top.length
     ? top
@@ -304,6 +330,7 @@ export function buildRunCard(evidence: PlayEvidence[]): { reads: PlayRead[]; sen
     : '';
   return {
     reads: tested,
+    world_reads: worldReads,
     sentence: sentence ? `In this one you played ${sentence}.` : 'This run was too short to read anything from.',
   };
 }

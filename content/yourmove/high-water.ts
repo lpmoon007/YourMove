@@ -614,6 +614,7 @@ export const HIGH_WATER: ScenarioPackage = {
       base_difficulty: 0.05,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'given_established', direction: 0.2, strength: 0.3, context: 'You asked whoever owned the number.' },
         { dimension: 'solo_coalition', direction: 0.4, strength: 0.5, context: 'You asked instead of working around them.' },
         { dimension: 'direct_cunning', direction: -0.3, strength: 0.35, context: 'You put the question to them straight.' },
       ],
@@ -651,6 +652,7 @@ export const HIGH_WATER: ScenarioPackage = {
       base_difficulty: 0.03,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'given_established', direction: 0.6, strength: 0.7, context: 'You established the number rather than take it.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -692,6 +694,7 @@ export const HIGH_WATER: ScenarioPackage = {
         failure: [{ kind: 'resource', id: 'alarm', from: 'world', to: 'you', amount: 2 }],
       },
       play_signals: [
+        { dimension: 'move_hold', direction: -0.4, strength: 0.5, context: 'You started moving people before you had finished deciding.' },
         { dimension: 'control_delegation', direction: 0.7, strength: 0.7, context: 'You set something in motion rather than settling it first.' },
         { dimension: 'caution_boldness', direction: 0.5, strength: 0.5, context: 'You started moving before you had finished deciding.' },
       ],
@@ -721,6 +724,7 @@ export const HIGH_WATER: ScenarioPackage = {
       base_difficulty: 0.15,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'move_hold', direction: -0.9, strength: 0.9, context: 'You moved them.' },
         { dimension: 'caution_boldness', direction: 0.7, strength: 0.8, context: 'You moved everybody rather than wait to see.' },
         { dimension: 'preserve_risk', direction: 0.6, strength: 0.6, context: 'You accepted the risk of the road over the risk of the building.' },
       ],
@@ -737,6 +741,7 @@ export const HIGH_WATER: ScenarioPackage = {
       base_difficulty: 0.15,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'move_hold', direction: 0.9, strength: 0.9, context: 'You kept them where you were.' },
         { dimension: 'caution_boldness', direction: -0.7, strength: 0.8, context: 'You kept everybody where you could see them.' },
         { dimension: 'preserve_risk', direction: -0.6, strength: 0.6, context: 'You accepted the risk of the building over the risk of the road.' },
       ],

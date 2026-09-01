@@ -16,6 +16,7 @@ import type { ScenarioPackage } from '../package';
 import type { PlaySignal, WorldEvent } from '../types';
 import type { World } from '../world';
 import { PLAY_TAXONOMY } from './dimensions';
+import type { PlayDimension } from './dimensions';
 
 export interface PlayEvidence {
   dimension: string;
@@ -246,6 +247,34 @@ function mergeByOpportunity(evidence: PlayEvidence[]): PlayEvidence[] {
 }
 
 /** The world-specific dimensions a scenario declares, for the profile page to render. */
-export function worldDimensions(pkg: ScenarioPackage) {
-  return pkg.world_specific_dimensions ?? [];
+/**
+ * A world's own two dimensions, as dimensions the profile can actually read.
+ *
+ * Worlds declare `label_left` / `label_right` / `measures`; a PlayDimension wants `left` /
+ * `right` and the three lines of copy. Nothing converted between them, so every one of
+ * these rendered with no words in it — and nothing passed them to the profile in the first
+ * place, and no verb in any world ever emitted a signal for one. Twenty-two authored
+ * dimensions across eleven worlds, completely inert.
+ *
+ * The copy is generated from the labels rather than authored a third time, because the
+ * label already says the thing: "Take The Conclusion" becomes "in this world you tended to
+ * take the conclusion", which is the house voice — what you did, never who you are.
+ */
+export function worldDimensions(pkg: ScenarioPackage): PlayDimension[] {
+  return (pkg.world_specific_dimensions ?? []).map((d) => {
+    const left = d.label_left.trim();
+    const right = d.label_right.trim();
+    // The whole label, not just its first letter: these are Title Case headings and
+    // "you tended to wait For Certainty" is not a sentence. None of them is a proper noun.
+    const lower = (s: string) => s.toLowerCase();
+    return {
+      id: d.id,
+      left,
+      right,
+      measures: d.measures,
+      copy_left: `In this world you tended to ${lower(left)}.`,
+      copy_right: `In this world you tended to ${lower(right)}.`,
+      copy_mixed: `You did both here — sometimes ${lower(left)}, sometimes ${lower(right)}.`,
+    };
+  });
 }

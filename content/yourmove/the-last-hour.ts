@@ -582,6 +582,7 @@ export const THE_LAST_HOUR: ScenarioPackage = {
       base_difficulty: 0.03,
       chip_when: { always: true },
       play_signals: [
+        { dimension: 'act_verify', direction: 0.6, strength: 0.7, context: 'You established it before you moved.' },
         { dimension: 'solo_coalition', direction: -0.45, strength: 0.5, context: 'You checked it yourself rather than asking anyone.' },
       ],
     },
@@ -617,6 +618,7 @@ export const THE_LAST_HOUR: ScenarioPackage = {
         failure: [{ kind: 'resource', id: 'riders', from: 'you', to: 'world', amount: 1 }],
       },
       play_signals: [
+        { dimension: 'act_verify', direction: 0.5, strength: 0.6, context: 'You spent a man to find out.' },
         { dimension: 'control_delegation', direction: 0.8, strength: 0.8, context: 'You sent somebody rather than working it out from where you stood.' },
         { dimension: 'preserve_risk', direction: 0.5, strength: 0.5, context: 'You spent minutes you could not get back on finding out.' },
       ],
@@ -647,6 +649,7 @@ export const THE_LAST_HOUR: ScenarioPackage = {
       base_difficulty: 0.1,
       chip_when: { clock: { gte: 4 } },
       play_signals: [
+        { dimension: 'ground_men', direction: 0.5, strength: 0.7, context: 'You went after the men on the flank.' },
         { dimension: 'speed_deliberation', direction: -0.7, strength: 0.8, context: 'You moved on the report you had rather than waiting for a better one.' },
         { dimension: 'preserve_risk', direction: 0.6, strength: 0.7, context: 'You put the reserve on one reading of the morning.' },
       ],
@@ -664,6 +667,7 @@ export const THE_LAST_HOUR: ScenarioPackage = {
       base_difficulty: 0.15,
       chip_when: { clock: { gte: 4 } },
       play_signals: [
+        { dimension: 'ground_men', direction: -0.7, strength: 0.8, context: 'You held the ground you were put there to hold.' },
         { dimension: 'caution_boldness', direction: -0.4, strength: 0.7, context: 'You kept what you had rather than spending it.' },
         { dimension: 'loyalty_opportunism', direction: 0.5, strength: 0.6, context: 'You held the position at the cost of the men furthest from you.' },
       ],
@@ -681,6 +685,7 @@ export const THE_LAST_HOUR: ScenarioPackage = {
       base_difficulty: 0.3,
       chip_when: { turns: { gte: 2 } },
       play_signals: [
+        { dimension: 'ground_men', direction: 0.8, strength: 0.9, context: 'You got them out.' },
         { dimension: 'caution_boldness', direction: -0.8, strength: 0.9, context: 'You took the ending where the fewest people are lost and the most is given up.' },
         { dimension: 'preserve_risk', direction: -0.8, strength: 0.85, context: 'You protected what you had rather than the position.' },
       ],
