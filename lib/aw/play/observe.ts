@@ -185,16 +185,29 @@ export function observePlay(world: World): PlayEvidence[] {
   }
 
   // --- derived, once per run: did anything you learned get passed on? ------
+  // This read the same for every player who ever played, twice over. First because until
+  // `informs` existed no event could ever name the player as a source: `tell` moved a
+  // disposition and left the room knowing nothing. And then, once it could, because a
+  // world seeds its cast knowing most of what is findable — the player is the one in the
+  // dark, not the room — so on nearly every run there is nothing to pass on and the
+  // signal fired anyway, filing "what you worked out, you kept" as though a choice had
+  // been made. A dimension nothing tested reports as untested; it does not invent an
+  // opportunity. So this only counts when the player actually HELD something somebody in
+  // the room did not, which is the moment the choice exists.
+  const others = world.presentActors().filter((a) => a !== world.playerId && world.character(a));
+  const couldHaveShared = world.knowledge
+    .factsFor(world.playerId)
+    .some(({ fact }) => others.some((a) => !world.knowledge.hasHeard(a, fact)));
   const shared = spine.filter((e) => e.verb === 'fact_disclosed' && e.actor_id === world.playerId).length;
   const last = playerActs[playerActs.length - 1];
-  if (last && learnedByTurn >= 0 && spoken.size > 0)
+  if (last && couldHaveShared && spoken.size > 0)
     push(last, {
       dimension: 'control_delegation',
       direction: shared > 0 ? 0.35 : -0.35,
       strength: 0.4,
       context: shared
         ? 'You handed people things you had worked out, rather than holding them.'
-        : 'What you worked out, you kept.',
+        : 'You held on to something nobody else in the room had.',
       confidence: 0.5,
     });
 

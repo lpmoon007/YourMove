@@ -40,6 +40,11 @@ export interface PlayRead {
    *  into a confident middle would be a lie about both of them. */
   varies_by: 'world' | 'run' | null;
   variation: { label: string; position: number }[] | null;
+  /** The variation, as a sentence with world TITLES in it. A world's id is a build
+   *  detail — a player who spent an hour in The Last Job has never seen the word
+   *  "last-job", and reading it on this page is the page admitting it was assembled
+   *  by a program. Null when nothing varies. */
+  variation_note: string | null;
 }
 
 export interface PlayProfile {
@@ -53,6 +58,9 @@ export interface PlayProfile {
   contradictions: string[];
   /** The standing caveat. Shipped with every read. */
   note: string;
+  /** Every world in the evidence, by id, with the name the player actually saw. Filled
+   *  for every id present, so nothing rendering from this has to handle a miss. */
+  world_titles: Record<string, string>;
 }
 
 const UNTESTED = 'No world has put you in this situation yet.';
@@ -69,10 +77,15 @@ function recencyWeight(runId: string, runOrder: string[]): number {
 
 export function buildProfile(
   evidence: PlayEvidence[],
-  opts: { runOrder?: string[]; extraDimensions?: PlayDimension[] } = {},
+  opts: { runOrder?: string[]; extraDimensions?: PlayDimension[]; worldTitles?: Record<string, string> } = {},
 ): PlayProfile {
   const runOrder = opts.runOrder ?? [...new Set(evidence.map((e) => e.run_id))];
   const dims = [...CORE_EIGHT, ...(opts.extraDimensions ?? [])];
+  /** A run outlives its world: the package can leave the build and the evidence stays.
+   *  Saying so is the honest answer, and it is still not an id. */
+  const titleOf = (worldId: string) => opts.worldTitles?.[worldId] ?? 'a world no longer here';
+  const worldTitles: Record<string, string> = {};
+  for (const e of evidence) worldTitles[e.world_id] = titleOf(e.world_id);
 
   const reads: PlayRead[] = dims.map((d) => {
     const mine = evidence.filter((e) => e.dimension === d.id);
@@ -93,6 +106,7 @@ export function buildProfile(
         counter_evidence: [],
         varies_by: null,
         variation: null,
+        variation_note: null,
       };
     }
 
@@ -151,6 +165,21 @@ export function buildProfile(
             ? d.copy_left
             : d.copy_right;
 
+    /** Names, joined the way a person writes them. */
+    const andList = (xs: string[]) =>
+      xs.length <= 1 ? (xs[0] ?? '') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`;
+    const lo = d.left.toLowerCase();
+    const hi = d.right.toLowerCase();
+    let variation_note: string | null = null;
+    if (variation && varies_by === 'world') {
+      const left = andList(variation.filter((v) => v.position < 0).map((v) => titleOf(v.label)));
+      const right = andList(variation.filter((v) => v.position >= 0).map((v) => titleOf(v.label)));
+      variation_note = `It reads differently depending on the world: ${lo} in ${left}; ${hi} in ${right}.`;
+    } else if (variation && varies_by === 'run') {
+      // Run ids are UUIDs. Nothing a player reads is ever built out of one.
+      variation_note = `It has swung between runs of the same world: ${lo} on one night, ${hi} on another.`;
+    }
+
     const towardSide = (e: PlayEvidence) => (position >= 0 ? e.direction > 0 : e.direction < 0);
     return {
       dimension: d.id,
@@ -168,6 +197,7 @@ export function buildProfile(
       counter_evidence: mine.filter((e) => !towardSide(e)).slice(-3),
       varies_by,
       variation,
+      variation_note,
     };
   });
 
@@ -177,10 +207,11 @@ export function buildProfile(
     worlds: [...new Set(evidence.map((e) => e.world_id))],
     reads,
     title: chooseTitle(reads),
-    contradictions: findContradictions(reads),
+    contradictions: findContradictions(reads, titleOf),
     note:
       'These are patterns in how you have played so far, not traits and not permanent. ' +
       'Different worlds bring out different sides of a player, and enough new moves will move any of these.',
+    world_titles: worldTitles,
   };
 }
 
@@ -287,7 +318,7 @@ const PAIRS: { a: string; b: string; when: (a: number, b: number) => boolean; sa
   },
 ];
 
-function findContradictions(reads: PlayRead[]): string[] {
+function findContradictions(reads: PlayRead[], titleOf: (worldId: string) => string): string[] {
   const pos = new Map(reads.filter((r) => r.position !== null && r.confidence !== 'emerging').map((r) => [r.dimension, r.position!]));
   const out: string[] = [];
   for (const p of PAIRS) {
@@ -300,7 +331,7 @@ function findContradictions(reads: PlayRead[]): string[] {
       const sorted = [...r.variation].sort((x, y) => x.position - y.position);
       out.push(
         r.varies_by === 'world'
-          ? `You play ${r.left.toLowerCase()} in ${sorted[0]!.label} and ${r.right.toLowerCase()} in ${sorted[sorted.length - 1]!.label}.`
+          ? `${r.left} in ${titleOf(sorted[0]!.label)}; ${r.right.toLowerCase()} in ${titleOf(sorted[sorted.length - 1]!.label)}.`
           : `On ${r.left} / ${r.right} you have played both ends hard, in different runs of the same world.`,
       );
     }

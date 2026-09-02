@@ -42,4 +42,15 @@ export function worldById(id: string): ScenarioPackage | null {
   return WORLDS.find((w) => w.id === id) ?? null;
 }
 
+/**
+ * Slug → the name the player actually saw. How You Play accumulates evidence tagged with
+ * a world's slug, and a slug is a build detail: nobody who played The Last Job has ever
+ * seen the word "last-job", and printing it on the profile page is the page admitting it
+ * was assembled by a program. A run outlives its world, so a slug missing from here is
+ * expected and the profile says so in words rather than falling back to the id.
+ */
+export function worldTitles(): Record<string, string> {
+  return Object.fromEntries(WORLDS.map((w) => [w.slug, w.title]));
+}
+
 export { LAST_JOB, LATE_EDITION, FOUR_MINUTES, NO_PREY_NO_PAY, THE_FAIR_COPY, HEAD_OF_PRESSURE, THE_LAST_HOUR };

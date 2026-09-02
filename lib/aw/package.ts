@@ -142,6 +142,14 @@ export interface VerbDef {
   chip_when?: Pred;
   /** The verb is addressed to a person and can draw disclosure out of them. */
   speech?: boolean;
+  /** The verb runs the other way: it puts what the PLAYER holds into the target's head.
+   *  Without this, a verb described as "put something you have worked out into the room"
+   *  moves a disposition and nothing else — the room learns nothing, the character can
+   *  never use it (L6 reads the knowledge state and only the knowledge state), and the
+   *  event spine records no disclosure the player was the source of. Every world's `tell`
+   *  shipped that way, which also meant one of How You Play's derived signals read the
+   *  same for every player who ever played: nobody had ever shared anything. */
+  informs?: boolean;
   /** The verb a bare question becomes. "how sure are you, Dez?" names no verb, but it is
    *  obviously a question put to somebody, and a world that answers it with "say that
    *  plainly" is broken. At most one verb per package may claim this. */

@@ -669,6 +669,7 @@ export const HEAD_OF_PRESSURE: ScenarioPackage = {
       default_minutes: 1,
       requires_target: true,
       speech: true,
+      informs: true,
       base_difficulty: 0.08,
       effects_by_outcome: {
         success: [{ kind: 'disposition', actor: '@target', axis: 'trust', delta: 8 }],

@@ -628,6 +628,7 @@ export const LAST_JOB: ScenarioPackage = {
       default_minutes: 2,
       requires_target: true,
       speech: true,
+      informs: true,
       base_difficulty: 0.05,
       effects_by_outcome: {
         success: [{ kind: 'disposition', actor: '@target', axis: 'trust', delta: 6 }],

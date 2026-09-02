@@ -14,6 +14,11 @@ export default async function HowYouPlayPage() {
   const { profile, badges, runs } = await howYouPlay();
   const account = await accountView();
   const tested = profile.reads.filter((r) => r.position !== null);
+  // Across worlds the same shape of moment recurs — four commitments read four times, in
+  // four different worlds. Without the world beside it the list looks like one sentence
+  // printed over and over, and the player cannot place any of it. Inside one world it
+  // would be noise, so it only appears when there is more than one.
+  const manyWorlds = profile.worlds.length > 1;
   const visibleBadges = badges.filter((b) => !b.secret);
   const secretsFound = badges.filter((b) => b.secret);
 
@@ -67,7 +72,9 @@ export default async function HowYouPlayPage() {
         <div className="ym-title-card">
           <p className="ym-title-label">No title yet</p>
           <p className="ym-title-why">
-            One run is a night, not a pattern. Play another world and the world will have something to call you.
+            {runs === 1
+              ? 'One run is a night, not a pattern. Play another world and the world will have something to call you.'
+              : 'Nothing has repeated firmly enough yet. Keep playing and the world will have something to call you.'}
           </p>
         </div>
       )}
@@ -98,14 +105,7 @@ export default async function HowYouPlayPage() {
                 {r.opportunities ? ` · read from ${r.opportunities} moment${r.opportunities === 1 ? '' : 's'}` : ''}
               </p>
 
-              {r.variation ? (
-                <p className="ym-meta">
-                  {r.varies_by === 'world'
-                    ? 'It reads differently depending on the world: '
-                    : 'It has swung between runs of the same world: '}
-                  {r.variation.map((v) => `${v.label} ${v.position < 0 ? r.left : r.right}`).join(' · ')}
-                </p>
-              ) : null}
+              {r.variation_note ? <p className="ym-meta">{r.variation_note}</p> : null}
 
               {r.evidence.length ? (
                 <>
@@ -114,6 +114,7 @@ export default async function HowYouPlayPage() {
                     {r.evidence.map((e, i) => (
                       <li key={i}>
                         {e.context}
+                        {manyWorlds ? <span className="ym-evidence-where">{profile.world_titles[e.world_id]}</span> : null}
                         {e.quote ? <span className="ym-quote">you typed “{e.quote}”</span> : null}
                       </li>
                     ))}
@@ -128,6 +129,7 @@ export default async function HowYouPlayPage() {
                     {r.counter_evidence.map((e, i) => (
                       <li key={i}>
                         {e.context}
+                        {manyWorlds ? <span className="ym-evidence-where">{profile.world_titles[e.world_id]}</span> : null}
                         {e.quote ? <span className="ym-quote">you typed “{e.quote}”</span> : null}
                       </li>
                     ))}
@@ -176,7 +178,7 @@ export default async function HowYouPlayPage() {
 
       <p className="ym-meta" style={{ marginTop: 30, maxWidth: '72ch' }}>
         {profile.note} {tested.length < CORE_EIGHT.length
-          ? `${CORE_EIGHT.length - tested.length} of the eight have not come up yet — a world has to actually put you in the situation before there is anything to read.`
+          ? `${CORE_EIGHT.length - tested.length} of the eight ${CORE_EIGHT.length - tested.length === 1 ? 'has' : 'have'} not come up yet — a world has to actually put you in the situation before there is anything to read.`
           : ''}
       </p>
       <p className="ym-actions">

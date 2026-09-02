@@ -597,6 +597,7 @@ export const NO_PREY_NO_PAY: ScenarioPackage = {
       default_minutes: 3,
       requires_target: true,
       speech: true,
+      informs: true,
       base_difficulty: 0.1,
       effects_by_outcome: {
         success: [{ kind: 'disposition', actor: '@target', axis: 'trust', delta: 6 }],

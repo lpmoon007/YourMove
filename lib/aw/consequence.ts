@@ -95,6 +95,43 @@ export function applyResolution(
     }
   }
 
+  // --- the other direction: what the PLAYER puts into somebody's head -------
+  // A verb declared `informs` runs the opposite way to a question. The player is the
+  // source; the target learns what the player holds, at a step down in fidelity, because
+  // being told a thing is not the same as having seen it. Held-but-false beliefs travel
+  // too: passing on something you were wrong about is one of the more interesting things
+  // a person can do here, and it is why the status carried is the PLAYER's, capped at
+  // 'told'. Only facts the target does not already hold, so a second telling is not a
+  // second event.
+  const verb = world.pkg.verbs.find((v) => v.id === intent.verb);
+  if (verb?.informs && target && world.character(target) && resolution.outcome !== 'failure' && resolution.outcome !== 'backfire') {
+    for (const { fact, record } of world.knowledge.factsFor(world.playerId)) {
+      if (world.knowledge.hasHeard(target, fact)) continue;
+      const status = record.status === 'believed_false' ? 'believed_false' : 'told';
+      knowledgeEffects.push({
+        kind: 'knowledge',
+        actor: target,
+        fact,
+        status,
+        value: record.value,
+        source: world.playerId,
+        fidelity: Math.max(0.3, record.fidelity - 0.2),
+        distortion: record.distortion,
+        confidence: Math.max(0.3, record.confidence - 0.2),
+      });
+      disclosures.push({
+        fact,
+        to: target,
+        from: world.playerId,
+        status,
+        value: record.value,
+        fidelity: Math.max(0.3, record.fidelity - 0.2),
+        distortion: record.distortion,
+        via: `informed:${verb!.id}`,
+      });
+    }
+  }
+
   const effects = [...resolution.effects, ...knowledgeEffects];
 
   // --- the atomic write: one event, one effect set, all or none ------------

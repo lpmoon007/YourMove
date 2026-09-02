@@ -4,7 +4,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { DEFAULT_WORLD, worldById, worldBySlug } from '@/content/yourmove';
+import { DEFAULT_WORLD, worldById, worldBySlug, worldTitles } from '@/content/yourmove';
 import {
   causalDebrief,
   buildReveal,
@@ -181,7 +181,7 @@ export async function howYouPlay(): Promise<HowYouPlayView> {
     store.playerRunOrder(me),
   ]);
   return {
-    profile: buildProfile(evidence, { runOrder }),
+    profile: buildProfile(evidence, { runOrder, worldTitles: worldTitles() }),
     badges,
     runs: new Set(evidence.map((e) => e.run_id)).size,
   };

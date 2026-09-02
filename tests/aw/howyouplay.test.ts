@@ -286,3 +286,134 @@ test("every world's own two questions get asked, and get words", async () => {
   const silent = [...seen.entries()].filter(([, n]) => n === 0).map(([slug]) => slug);
   assert.deepEqual(silent, [], `these worlds said nothing of their own after a full run: ${silent.join(', ')}`);
 });
+
+// ---------------------------------------------------------------------------
+// The engine and the play layer may not name one world's content.
+//
+// badges.ts shipped keyed on the fact ids `leak_source` and `sedan_truth`, the flags
+// `named_right` / `named_wrong`, and a resource called `cash`. All five belong to The
+// Last Job and to nothing else, so six of eleven badges were unearnable in ten of the
+// eleven worlds — and every badge test passed, because they all played The Last Job.
+// This is the class, not the instance: anything under lib/ that names a thing only one
+// world declares is content that has escaped into shared code.
+// ---------------------------------------------------------------------------
+
+/** Every id a package declares, from the structured places rather than by reading source. */
+function declaredIds(pkg: (typeof WORLDS)[number]): Set<string> {
+  const ids = new Set<string>();
+  for (const f of pkg.facts) ids.add(f.id);
+  for (const id of Object.keys(pkg.world.resources)) ids.add(id);
+  for (const e of pkg.entities) ids.add(e.id);
+  for (const c of pkg.cast) ids.add(c.id);
+  // Flags are set by effects and read by predicates; both are plain objects in the data.
+  const walk = (node: unknown) => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== 'object') return;
+    const o = node as Record<string, unknown>;
+    if (o.kind === 'flag' && typeof o.id === 'string') ids.add(o.id);
+    if (typeof o.flag === 'string') ids.add(o.flag);
+    Object.values(o).forEach(walk);
+  };
+  walk(pkg as unknown);
+  return ids;
+}
+
+function sourceFiles(dir: string, out: string[] = []): string[] {
+  for (const name of readdirSync(dir)) {
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) sourceFiles(full, out);
+    else if (name.endsWith('.ts')) out.push(full);
+  }
+  return out;
+}
+
+test('no shared module names content that only one world declares', () => {
+  const owners = new Map<string, Set<string>>();
+  for (const pkg of WORLDS)
+    for (const id of declaredIds(pkg)) {
+      const set = owners.get(id) ?? new Set<string>();
+      set.add(pkg.slug);
+      owners.set(id, set);
+    }
+  // Ids only one world uses. Short ones are excluded: a two- or three-letter id collides
+  // with ordinary English and would report the word rather than the reference.
+  const soleOwned = [...owners].filter(([id, w]) => w.size === 1 && id.length >= 4);
+  assert.ok(soleOwned.length > 50, 'expected the worlds to declare plenty of their own ids');
+
+  const offenders: string[] = [];
+  for (const file of sourceFiles(join(process.cwd(), 'lib'))) {
+    const src = readFileSync(file, 'utf8');
+    for (const [id, worlds] of soleOwned)
+      if (src.includes(`'${id}'`) || src.includes(`"${id}"`))
+        offenders.push(`${file.replace(process.cwd() + '/', '')} names '${id}', declared only by ${[...worlds][0]}`);
+  }
+  assert.deepEqual(offenders, [], `shared code is keyed on one world's content:\n  ${offenders.join('\n  ')}`);
+});
+
+test('no badge is awarded on every finished run', async () => {
+  // "Nothing Blew Up" was awarded on 264 of 264 runs across all eleven worlds, at a
+  // rarity that sat it beside things almost nobody earns. A badge everybody always gets
+  // is a certificate of attendance. Rates are measured properly by npm run audit:badges;
+  // this only fails the build on the degenerate case.
+  const finished: string[][] = [];
+  for (const pkg of WORLDS.slice(0, 5)) {
+    const people = pkg.cast.map((c) => c.name.split(' ')[0]!);
+    const things = pkg.entities.filter((e) => e.searchable).map((e) => e.name.replace(/^the /, ''));
+    const look = pkg.verbs.find((v) => v.object_verb)?.aliases[0] ?? 'look at';
+    const ends = pkg.verbs.filter((v) => v.commitment);
+    const shapes = [
+      [...things.map((t) => `${look} the ${t}`), ...people.map((n) => `ask ${n} what they saw`)],
+      [...people.map((n) => `ask ${n} what they saw`), ...ends.map((e) => `${e.label.toLowerCase()} ${people[0]}`)],
+      [...ends.map((e) => `${e.label.toLowerCase()} ${people[0]}`)],
+    ];
+    for (const moves of shapes) {
+      const world = loadWorld(pkg, { run_id: `rate-${pkg.slug}-${moves.length}`, seed: `${pkg.slug}-rate` });
+      for (const m of moves) {
+        if (world.ended) break;
+        await takeTurn(world, m);
+      }
+      let guard = 0;
+      while (!world.ended && guard++ < 40) await takeTurn(world, 'wait');
+      if (world.ended) finished.push(awardBadges(world, observePlay(world)).map((b) => b.id));
+    }
+  }
+  assert.ok(finished.length >= 8, `expected several finished runs, got ${finished.length}`);
+  const everywhere = finished[0]!.filter((id) => finished.every((run) => run.includes(id)));
+  assert.deepEqual(everywhere, [], `awarded on every single run: ${everywhere.join(', ')}`);
+});
+
+test('nothing a player reads on the profile is built out of an id', () => {
+  // The profile page printed "It reads differently depending on the world: inbound Caution
+  // · the-nod Boldness · high-water Boldness" and "You play caution in inbound and boldness
+  // in last-job". Nobody who spent an hour in The Last Job has ever seen the word
+  // "last-job": a slug on the screen is the page admitting it was assembled by a program.
+  // Run ids are worse — they are UUIDs.
+  const worlds = ['last-job', 'inbound', 'the-nod'];
+  const titles = { 'last-job': 'The Last Job', inbound: 'Inbound', 'the-nod': 'The Nod' };
+  const runs = ['9f3c1e22-0000-4aaa-8bbb-000000000001', '9f3c1e22-0000-4aaa-8bbb-000000000002'];
+  // The same dimension played opposite ways in different worlds, which is what makes a
+  // read context-dependent and puts the variation copy on the screen.
+  const evidence = [0, 1, 2, 3, 4, 5].map((i) => ({
+    run_id: runs[i % 2]!,
+    world_id: worlds[i % 3]!,
+    opportunity_id: `op-${i}`,
+    dimension: 'caution_boldness',
+    direction: worlds[i % 3] === 'last-job' ? -0.9 : 0.9,
+    strength: 1,
+    confidence: 1,
+    context: 'You committed.',
+    quote: 'go',
+    taxonomy: 'play-v0.1',
+  }));
+  const profile = buildProfile(evidence as never, { worldTitles: titles });
+  const read = profile.reads.find((r) => r.dimension === 'caution_boldness')!;
+  assert.equal(read.confidence, 'context-dependent', 'the fixture should split by world');
+
+  const onScreen = [read.read, read.variation_note ?? '', ...profile.contradictions, profile.note].join(' \n ');
+  for (const slug of worlds)
+    assert.ok(!onScreen.includes(slug), `the profile prints the world id "${slug}":\n${onScreen}`);
+  for (const id of runs) assert.ok(!onScreen.includes(id), 'the profile prints a run id');
+  assert.ok(onScreen.includes('The Last Job') && onScreen.includes('Inbound'), 'it should name the worlds');
+  // And every world in the evidence resolves, so nothing rendering from this hits a blank.
+  for (const slug of worlds) assert.ok(profile.world_titles[slug], `no title for ${slug}`);
+});
